@@ -1,2 +1,3 @@
 logs
 airflow-webserver.pid
+unittests.cfg
