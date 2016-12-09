@@ -30,6 +30,6 @@ t1 = PostgresOperator(
   sql="""
       SELECT COUNT(1) FROM heroku_public.districts
   """,
-  postgres_conn_id='redshift',
+  postgres_conn_id='redshift_east',
   dag=dag,
 )
