@@ -1,6 +1,10 @@
 from airflow import DAG
 from airflow.operators.subdag_operator import SubDagOperator
 from airflow.operators.postgres_operator import PostgresOperator
+from airflow.operators import (
+    FBRedshiftOperator,
+    FBRedshiftToS3Transfer,
+)
 from airflow.hooks.postgres_hook import PostgresHook
 from datetime import datetime, timedelta
 
@@ -43,7 +47,7 @@ def get_scrape_subdag(table_name):
         default_args=default_args,        
         schedule_interval=SCHEDULE_INTERVAL,
     )
-    copy = PostgresOperator(
+    copy_transaction = FBRedshiftOperator(
         task_id='copy_transaction',
         postgres_conn_id=REDSHIFT_CONN_ID,
         sql="""
@@ -85,6 +89,25 @@ def get_scrape_subdag(table_name):
         },
         dag=dag,
     )
+
+    unload = FBRedshiftToS3Transfer(
+        task_id='unload',
+        schema=AIRFLOW_SCHEMA,
+        table='{{ params.table_name }}_{{ ds }}',
+        s3_bucket='plp-data-lake',
+        s3_key='scrapes-opt-prod-airflow/{{ params.table_name }}/as_of={{ ds }}/',
+        redshift_conn_id=REDSHIFT_CONN_ID,
+        unload_options=[
+            'ALLOWOVERWRITE',
+            'DELIMITER AS \',\'',
+            'GZIP',
+            'ESCAPE ADDQUOTES',
+        ],
+        params={'table_name': table_name},
+        dag=dag,
+    )
+    unload.set_upstream(copy_transaction)
+
     return dag
 
 table_names = get_table_names()
