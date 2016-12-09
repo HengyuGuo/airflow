@@ -3,7 +3,7 @@ Code that goes along with the Airflow located at:
 http://airflow.readthedocs.org/en/latest/tutorial.html
 """
 from airflow import DAG
-from airflow.operators.jdbc_operator import JdbcOperator
+from airflow.operators.postgres_operator import PostgresOperator
 from datetime import datetime, timedelta
 
 
@@ -11,7 +11,7 @@ default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
     'start_date': datetime(2015, 6, 1),
-    'email': ['airflow@airflow.com'],
+    'email': ['astewart@summitps.org'],
     'email_on_failure': False,
     'email_on_retry': False,
     'retries': 1,
@@ -23,13 +23,13 @@ default_args = {
 }
 
 dag = DAG(
-    'test_snowflake', default_args=default_args, schedule_interval='0 * * * *')
+    'redshift_test', default_args=default_args, schedule_interval='0 * * * *')
 
-t1 = JdbcOperator(
+t1 = PostgresOperator(
   task_id='count_table_rows',
   sql="""
-      SELECT COUNT(1) FROM districts
+      SELECT COUNT(1) FROM heroku_public.districts
   """,
-  jdbc_conn_id='snowflake_test_db',
+  postgres_conn_id='redshift_east',
   dag=dag,
 )
