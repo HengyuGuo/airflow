@@ -1,0 +1,62 @@
+#!/bin/bash
+
+EXEC_SCRIPT=/usr/local/bin/airflow
+CMDNAME=`basename $0`
+LOG_DIR=/var/log/airflow
+PID_DIR=/var/run
+PID_FILE="$PID_DIR"/airflow_scheduler.pid
+LOG_FILE="$LOG_DIR"/scheduler.log
+PORT=8080
+RUN_USER=airflow
+
+if ! grep "^$RUN_USER:" /etc/passwd > /dev/null
+then
+  echo "no user : $RUN_USER"
+  exit
+fi
+
+# Source run_user profile
+. /home/$RUN_USER/.bash_profile
+
+test -d $LOG_DIR || mkdir $LOG_DIR; chmod -R 777 $LOG_DIR
+
+RETVAL=0
+
+case "$1" in
+    start)
+        if [ ! -f "$PID_FILE" ]; then
+          echo -n "Starting Airflow Scheduler"
+          sudo -u $RUN_USER nohup $EXEC_SCRIPT scheduler &> $LOG_FILE &
+          ps aux | grep "airflow scheduler" | grep -v grep | awk '{ print $2 }' > $PID_FILE
+        else
+          echo -n "Airflow Scheduler is already running"
+          RETVAL=1
+        fi
+        ;;
+    stop)
+        if [ -f "$PID_FILE" ]; then
+          echo -n "Stopping Airflow Scheduler"
+          test -f $PID_FILE && cat $PID_FILE | xargs kill -s SIGKILL
+          ps aux | grep "airflow scheduler" | awk '{ print $2 }' | xargs kill -s SIGKILL 
+          rm -f $PID_FILE
+        else
+          echo -n "Airflow Scheduler is not running"
+          RETVAL=1
+        fi
+        echo
+        ;;
+    restart)
+        $0 stop
+        $0 start
+        ;;
+    status)
+        status airflow server
+        RETVAL=$?
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|status|restart|reload}"
+        exit 1
+        ;;
+esac
+
+exit $RETVAL
