@@ -2,4 +2,4 @@ logs
 airflow-webserver.pid
 unittests.cfg
 .DS_Store
-.pyc
+*.pyc
