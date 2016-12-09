@@ -1,0 +1,1 @@
+*/1 * * * * /bin/sh -c 'cd ~airflow/airflow && /usr/bin/git pull origin master'
