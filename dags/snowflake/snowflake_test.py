@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
-    'start_date': datetime(2015, 6, 1),
+    'start_date': datetime(2016, 12, 8),
     'email': ['airflow@airflow.com'],
     'email_on_failure': False,
     'email_on_retry': False,
@@ -23,7 +23,7 @@ default_args = {
 }
 
 dag = DAG(
-    'snowflake_test', default_args=default_args, schedule_interval='0 * * * *')
+    'snowflake_test', default_args=default_args, schedule_interval='@daily')
 
 t1 = JdbcOperator(
   task_id='count_table_rows',
