@@ -1,9 +1,9 @@
 from airflow import DAG
 from airflow.operators.subdag_operator import SubDagOperator
-from airflow.operators.postgres_operator import PostgresOperator
 from airflow.operators import (
     FBRedshiftOperator,
     FBRedshiftToS3Transfer,
+    FBWriteSignalOperator,
 )
 from airflow.hooks.postgres_hook import PostgresHook
 from datetime import datetime, timedelta
@@ -89,6 +89,15 @@ def get_scrape_subdag(table_name):
         },
         dag=dag,
     )
+
+    signal = FBWriteSignalOperator(
+        conn_id=REDSHIFT_CONN_ID,
+        task_id='write_signal',
+        schema=AIRFLOW_SCHEMA,
+        table=table_name,
+        dag=dag,
+    )
+    signal.set_upstream(copy_transaction)
 
     unload = FBRedshiftToS3Transfer(
         task_id='unload',

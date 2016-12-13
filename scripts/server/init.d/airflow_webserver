@@ -28,6 +28,7 @@ case "$1" in
           echo -n "Starting Airflow WebServer"
           sudo -u $RUN_USER nohup $EXEC_SCRIPT webserver -p $PORT 0<&- &> $LOG_FILE &
           ps aux | grep "airflow webserver" | grep -v grep | awk '{ print $2 }' > $PID_FILE
+          sudo iptables -t nat -A PREROUTING -p tcp --dport $PROD_PORT -j REDIRECT --to-port $PORT
         else
           echo -n "Airflow WebServer is already running"
           RETVAL=1
