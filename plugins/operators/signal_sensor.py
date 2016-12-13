@@ -27,6 +27,8 @@ class FBSignalSensor(BaseSensorOperator):
         self.schema = schema
         self.table = table
         self.partition_id = partition_id
+        self.poke_interval = poke_interval
+        self.timeout = timeout
 
     def poke(self, context):
         hook = BaseHook.get_connection(self.conn_id).get_hook()
