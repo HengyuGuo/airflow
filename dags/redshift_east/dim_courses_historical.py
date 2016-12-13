@@ -62,7 +62,8 @@ dim_transaction = FBRedshiftOperator(
             owner_id integer,
             owner_type character varying(256),
             as_of character varying(10)
-        );
+        )
+        SORTKEY (as_of, id, academic_year);
         GRANT ALL PRIVILEGES ON {{ params.output_schema }}."dim_courses_historical" TO GROUP data_users;
 
         DELETE FROM {{ params.output_schema }}."dim_courses_historical" WHERE as_of = '{{ ds }}';
