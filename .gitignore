@@ -3,3 +3,5 @@ airflow-webserver.pid
 unittests.cfg
 .DS_Store
 *.pyc
+airflow.db
+unittests.db
