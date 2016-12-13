@@ -1,16 +1,13 @@
 from airflow import DAG
-from airflow.operators import (
-    FBRedshiftOperator,
-    FBRedshiftToS3Transfer,
-    FBSignalSensor,
-    FBWriteSignalOperator,
-)
+from airflow.operators import FBSignalSensor
+from airflow.operators.subdag_operator import SubDagOperator
 from datetime import datetime, timedelta
 from redshift_east.constants import (
     REDSHIFT_CONN_ID,
     STAGING_SCRAPES_SCHEMA,
     DIM_AND_FCT_SCHEMA,
 )
+from redshift_east import dim_helper
 
 default_args = {
     'owner': 'astewart',
@@ -23,7 +20,10 @@ default_args = {
     'retry_delay': timedelta(minutes=5),
 }
 
-dag = DAG('redshift_dim_courses_historical', default_args=default_args, schedule_interval='@daily')
+PARENT_DAG_NAME = 'redshift_dim_courses_historical'
+SCHEDULE_INTERVAL = '@daily'
+
+dag = DAG(PARENT_DAG_NAME, default_args=default_args, schedule_interval=SCHEDULE_INTERVAL)
 
 wait_for_courses = FBSignalSensor(
     task_id='wait_for_courses',
@@ -41,14 +41,16 @@ wait_for_subjects = FBSignalSensor(
     dag=dag,
 )
 
-# TODO: Make this into a fully fledged operator after getting reviewed.
-dim_transaction = FBRedshiftOperator(
-    task_id='dim_transaction',
-    postgres_conn_id=REDSHIFT_CONN_ID,
-    sql="""
-        BEGIN;
-
-        CREATE TABLE IF NOT EXISTS {{ params.output_schema }}."dim_courses_historical" (
+dim_helper = SubDagOperator(
+    task_id='dim_helper',
+    subdag=dim_helper.sub_dag(
+        parent_dag_name=PARENT_DAG_NAME,
+        default_args=default_args,
+        schedule_interval=SCHEDULE_INTERVAL,
+        dim_table='dim_courses',
+        input_schema=STAGING_SCRAPES_SCHEMA,
+        output_schema=DIM_AND_FCT_SCHEMA,
+        fields_sql="""
             id integer,
             name character varying(1020),
             grade_level integer,
@@ -62,45 +64,30 @@ dim_transaction = FBRedshiftOperator(
             subject_category character varying(256),
             owner_id integer,
             owner_type character varying(256),
-            as_of character varying(10)
-        )
-        SORTKEY (as_of, id, academic_year);
-        GRANT ALL PRIVILEGES ON {{ params.output_schema }}."dim_courses_historical" TO GROUP data_users;
-
-        DELETE FROM {{ params.output_schema }}."dim_courses_historical" WHERE as_of = '{{ ds }}';
-
-        INSERT INTO {{ params.output_schema }}."dim_courses_historical"
-        SELECT
-            c.id AS id,
-            c.name AS name,
-            c.grade_level AS grade_level,
-            c.academic_year AS academic_year,
-            enum_name_for_value('category', c.category, 'courses', 'Course') AS course_category,
-            enum_name_for_value('visibility', c.visibility, 'courses', 'Course') AS visibility,
-            c.full_year_course AS full_year_course,
-            c.subject_id AS subject_id,
-            s.name AS subject_name,
-            s.core AS core_subject,
-            enum_name_for_value('category', s.category, 'Subjects', 'Subject') AS subject_category,
-            c.owner_id AS owner_id,
-            c.owner_type AS owner_type,
-            '{{ ds }}' AS as_of
-        FROM {{ params.input_schema }}.courses c
-        JOIN {{ params.input_schema }}.subjects s
-        ON (c.subject_id = s.id);
-
-        DROP VIEW IF EXISTS {{ params.output_schema }}."dim_courses";
-        CREATE VIEW {{ params.output_schema }}."dim_courses" AS
-            SELECT * FROM {{ params.output_schema }}."dim_courses_historical"
-            WHERE as_of = '{{ ds }}';
-        GRANT ALL PRIVILEGES ON {{ params.output_schema }}."dim_courses" TO GROUP data_users;
-
-        COMMIT;
-    """,
-    params={
-      'input_schema': STAGING_SCRAPES_SCHEMA,
-      'output_schema': DIM_AND_FCT_SCHEMA,
-    },
+            as_of date
+        """,
+        select_sql="""
+            SELECT
+                c.id AS id,
+                c.name AS name,
+                c.grade_level AS grade_level,
+                c.academic_year AS academic_year,
+                enum_name_for_value('category', c.category, 'courses', 'Course') AS course_category,
+                enum_name_for_value('visibility', c.visibility, 'courses', 'Course') AS visibility,
+                CASE c.full_year_course WHEN 't' THEN TRUE WHEN 'f' THEN FALSE ELSE NULL END AS full_year_course,
+                c.subject_id AS subject_id,
+                s.name AS subject_name,
+                CASE s.core WHEN 't' THEN TRUE WHEN 'f' THEN FALSE ELSE NULL END AS core_subject,
+                enum_name_for_value('category', s.category, 'Subjects', 'Subject') AS subject_category,
+                c.owner_id AS owner_id,
+                c.owner_type AS owner_type,
+                TO_DATE('{{ ds }}', 'YYYY-MM-DD') AS as_of
+            FROM {{ params.input_schema }}.courses c
+            JOIN {{ params.input_schema }}.subjects s
+            ON (c.subject_id = s.id);
+        """,
+        sortkey='as_of, id',
+    ),
     dag=dag,
 )
-dim_transaction.set_upstream([wait_for_courses, wait_for_subjects])
+dim_helper.set_upstream([wait_for_courses, wait_for_subjects])
