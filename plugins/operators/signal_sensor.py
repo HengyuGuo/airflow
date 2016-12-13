@@ -1,7 +1,9 @@
 import logging
+from datetime import timedelta
 from airflow.operators.sensors import BaseSensorOperator
 from airflow.hooks.base_hook import BaseHook
 from airflow.utils.decorators import apply_defaults
+from airflow.exceptions import AirflowException
 
 class FBSignalSensor(BaseSensorOperator):
     template_fields = (
@@ -17,8 +19,8 @@ class FBSignalSensor(BaseSensorOperator):
         schema,
         table,
         partition_id='as_of={{ ds }}',
-        poke_interval=5* 60,
-        timeout=24 * 60 * 60,
+        retry_interval=timedelta(600),
+        retries=144,  # 600 seconds * 144 = 1 day
         *args,
         **kwargs
     ):
@@ -27,8 +29,9 @@ class FBSignalSensor(BaseSensorOperator):
         self.schema = schema
         self.table = table
         self.partition_id = partition_id
-        self.poke_interval = poke_interval
-        self.timeout = timeout
+        self.email_on_retry = False
+        self.retry_interval = retry_interval
+        self.retries = retries
 
     def poke(self, context):
         hook = BaseHook.get_connection(self.conn_id).get_hook()
@@ -44,4 +47,6 @@ class FBSignalSensor(BaseSensorOperator):
         logging.info('Poking: ' + sql)
         record = hook.get_first(sql)
         signal_present = record[0] > 0
-        return signal_present
+        if not signal_present:
+            raise AirflowException('Not present -- retry. If this is a test, then run the dependent job to fix the signal table issue.')
+        return True
