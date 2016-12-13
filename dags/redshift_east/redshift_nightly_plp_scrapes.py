@@ -7,6 +7,7 @@ from airflow.operators import (
 )
 from airflow.hooks.postgres_hook import PostgresHook
 from datetime import datetime, timedelta
+from redshift_east.constants import REDSHIFT_CONN_ID, STAGING_SCRAPES_SCHEMA
 
 default_args = {
     'owner': 'astewart',
@@ -20,9 +21,7 @@ default_args = {
 }
 
 PARENT_DAG_NAME = 'redshift_nightly_plp_scrapes'
-REDSHIFT_CONN_ID = 'redshift_east'
 SCHEDULE_INTERVAL = '@daily'
-AIRFLOW_SCHEMA = 'airflow_staging_scrapes'
 
 main_dag = DAG(
     PARENT_DAG_NAME,
@@ -84,7 +83,7 @@ def get_scrape_subdag(table_name):
             COMMIT;
         """,
         params={
-          'schema': AIRFLOW_SCHEMA,
+          'schema': STAGING_SCRAPES_SCHEMA,
           'table_name': table_name,
         },
         dag=dag,
@@ -93,7 +92,7 @@ def get_scrape_subdag(table_name):
     signal = FBWriteSignalOperator(
         conn_id=REDSHIFT_CONN_ID,
         task_id='write_signal',
-        schema=AIRFLOW_SCHEMA,
+        schema=STAGING_SCRAPES_SCHEMA,
         table=table_name,
         dag=dag,
     )
@@ -101,7 +100,7 @@ def get_scrape_subdag(table_name):
 
     unload = FBRedshiftToS3Transfer(
         task_id='unload',
-        schema=AIRFLOW_SCHEMA,
+        schema=STAGING_SCRAPES_SCHEMA,
         table='{{ params.table_name }}_{{ ds }}',
         s3_bucket='plp-data-lake',
         s3_key='scrapes-opt-prod-airflow/{{ params.table_name }}/as_of={{ ds }}/',

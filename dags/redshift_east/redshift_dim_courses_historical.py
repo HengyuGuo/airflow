@@ -6,6 +6,11 @@ from airflow.operators import (
     FBWriteSignalOperator,
 )
 from datetime import datetime, timedelta
+from redshift_east.constants import (
+    REDSHIFT_CONN_ID,
+    STAGING_SCRAPES_SCHEMA,
+    DIM_AND_FCT_SCHEMA,
+)
 
 default_args = {
     'owner': 'astewart',
@@ -18,16 +23,12 @@ default_args = {
     'retry_delay': timedelta(minutes=5),
 }
 
-REDSHIFT_CONN_ID = 'redshift_east'
-INPUT_SCHEMA = 'airflow_staging_scrapes'
-OUTPUT_SCHEMA = 'airflow_dim_tables'
-
-dag = DAG('dim_courses_historical', default_args=default_args, schedule_interval='@daily')
+dag = DAG('redshift_dim_courses_historical', default_args=default_args, schedule_interval='@daily')
 
 wait_for_courses = FBSignalSensor(
     task_id='wait_for_courses',
     conn_id=REDSHIFT_CONN_ID,
-    schema=INPUT_SCHEMA,
+    schema=STAGING_SCRAPES_SCHEMA,
     table='courses',
     dag=dag,
 )
@@ -35,7 +36,7 @@ wait_for_courses = FBSignalSensor(
 wait_for_subjects = FBSignalSensor(
     task_id='wait_for_subjects',
     conn_id=REDSHIFT_CONN_ID,
-    schema=INPUT_SCHEMA,
+    schema=STAGING_SCRAPES_SCHEMA,
     table='subjects',
     dag=dag,
 )
@@ -97,8 +98,8 @@ dim_transaction = FBRedshiftOperator(
         COMMIT;
     """,
     params={
-      'input_schema': INPUT_SCHEMA,
-      'output_schema': OUTPUT_SCHEMA,
+      'input_schema': STAGING_SCRAPES_SCHEMA,
+      'output_schema': DIM_AND_FCT_SCHEMA,
     },
     dag=dag,
 )

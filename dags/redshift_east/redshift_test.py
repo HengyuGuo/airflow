@@ -5,7 +5,7 @@ http://airflow.readthedocs.org/en/latest/tutorial.html
 from airflow import DAG
 from airflow.operators.postgres_operator import PostgresOperator
 from datetime import datetime, timedelta
-
+from redshift_east.constants import REDSHIFT_CONN_ID
 
 default_args = {
     'owner': 'airflow',
@@ -30,6 +30,6 @@ t1 = PostgresOperator(
   sql="""
       SELECT COUNT(1) FROM heroku_public.districts
   """,
-  postgres_conn_id='redshift_east',
+  postgres_conn_id=REDSHIFT_CONN_ID,
   dag=dag,
 )
