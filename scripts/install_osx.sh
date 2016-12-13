@@ -6,6 +6,6 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 brew install python
 # Need latest java for snowflake.
-brew install java
+brew cask install java
 $DIR/install_base.sh
 echo 'export JAVA_HOME=$(/usr/libexec/java_home)' >> ~/.bash_profile
