@@ -19,7 +19,7 @@ class FBSignalSensor(BaseSensorOperator):
         schema,
         table,
         partition_id='as_of={{ ds }}',
-        retry_interval=timedelta(600),
+        retry_delay=timedelta(seconds=600),
         retries=144,  # 600 seconds * 144 = 1 day
         *args,
         **kwargs
@@ -30,7 +30,7 @@ class FBSignalSensor(BaseSensorOperator):
         self.table = table
         self.partition_id = partition_id
         self.email_on_retry = False
-        self.retry_interval = retry_interval
+        self.retry_delay = retry_delay
         self.retries = retries
 
     def poke(self, context):
