@@ -12,7 +12,6 @@ class FBSignalSensor(BaseSensorOperator):
       'partition_id',
     )
 
-    @apply_defaults
     def __init__(
         self,
         conn_id,
