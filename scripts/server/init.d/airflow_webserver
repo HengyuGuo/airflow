@@ -3,10 +3,11 @@
 EXEC_SCRIPT=/usr/local/bin/airflow
 CMDNAME=`basename $0`
 LOG_DIR=/var/log/airflow
-PID_DIR=/var/run
+PID_DIR=/home/airflow/airflow
 PID_FILE="$PID_DIR"/airflow_webserver.pid
 LOG_FILE="$LOG_DIR"/webserver.log
 PORT=8080
+PROD_PORT=80
 RUN_USER=airflow
 
 if ! grep "^$RUN_USER:" /etc/passwd > /dev/null
@@ -26,8 +27,7 @@ case "$1" in
     start)
         if [ ! -f "$PID_FILE" ]; then
           echo -n "Starting Airflow WebServer"
-          sudo -u $RUN_USER nohup $EXEC_SCRIPT webserver -p $PORT 0<&- &> $LOG_FILE &
-          ps aux | grep "airflow webserver" | grep -v grep | awk '{ print $2 }' > $PID_FILE
+          sudo -u $RUN_USER nohup $EXEC_SCRIPT webserver -p $PORT --pid $PID_FILE 0<&- &> $LOG_FILE &
           sudo iptables -t nat -A PREROUTING -p tcp --dport $PROD_PORT -j REDIRECT --to-port $PORT
         else
           echo -n "Airflow WebServer is already running"
@@ -38,8 +38,8 @@ case "$1" in
         if [ -f "$PID_FILE" ]; then
           echo -n "Stopping Airflow WebServer"
           test -f $PID_FILE && cat $PID_FILE | xargs kill -s SIGKILL
-          ps aux | grep "gunicorn: master \[airflow.www.app:cached_app()\]" | awk '{ print $2 }' | xargs kill -s SIGKILL 
-          ps aux | grep "gunicorn: worker \[airflow.www.app:cached_app()\]" | awk '{ print $2 }' | xargs kill -s SIGKILL 
+          ps aux | grep "gunicorn: master \[airflow" | awk '{ print $2 }' | xargs kill -s SIGKILL 
+          ps aux | grep "gunicorn: worker \[airflow" | awk '{ print $2 }' | xargs kill -s SIGKILL 
           rm -f $PID_FILE
         else
           echo -n "Airflow WebServer is not running"
