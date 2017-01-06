@@ -1,3 +1,7 @@
+import boto.sns
+import imp
+import sys
+
 from airflow.plugins_manager import AirflowPlugin
 
 from hooks.cached_db_api_hook import FBCachedDbApiHook
@@ -22,3 +26,14 @@ class FacebookPlugin(AirflowPlugin):
     executors = []
     admin_views = []
     menu_links = []
+
+# SNS handling code.
+SNS_TOPIC = 'arn:aws:sns:us-east-1:950587841421:airflow-failures'
+def send_sns(to, subject, html_content, files=None, dryrun=False, cc=None, bcc=None, mime_subtype='mixed'):
+    conn = boto.sns.connect_to_region('us-east-1')
+    conn.publish(topic=SNS_TOPIC, subject=subject, message=html_content)
+
+# Hacks to make the SNS package available.
+sns_module = imp.new_module('airflowsnshack')
+sns_module.send_sns = send_sns
+sys.modules['airflowsnshack'] = sns_module

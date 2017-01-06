@@ -28,6 +28,7 @@ class FBSignalSensor(BaseSensorOperator):
         self.schema = schema
         self.table = table
         self.partition_id = partition_id
+        self.email_on_failure = True
         self.email_on_retry = False
         self.retry_delay = retry_delay
         self.retries = retries

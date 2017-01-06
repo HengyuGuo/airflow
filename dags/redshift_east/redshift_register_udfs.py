@@ -17,14 +17,14 @@ default_args = {
     'depends_on_past': False,
     'start_date': datetime(2016, 12, 14),
     'email': ['kseu@summitps.org'],
-    'email_on_failure': False,
+    'email_on_failure': True,
     'email_on_retry': False,
     'retries': 2,
     'retry_delay': timedelta(minutes=5),
 }
 
 dag = DAG(
-    'register_udfs',
+    'redshift_register_udfs',
     default_args=default_args,
     schedule_interval='@daily',
 )

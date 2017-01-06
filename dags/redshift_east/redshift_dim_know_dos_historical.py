@@ -14,7 +14,7 @@ default_args = {
     'depends_on_past': False,
     'start_date': datetime(2016, 12, 12),
     'email': ['astewart@summitps.org'],
-    'email_on_failure': False,
+    'email_on_failure': True,
     'email_on_retry': False,
     'retries': 1,
     'retry_delay': timedelta(minutes=5),
