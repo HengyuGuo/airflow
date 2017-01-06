@@ -5,8 +5,8 @@ from airflow.operators import (
     FBRedshiftToS3Transfer,
     FBWriteSignalOperator,
 )
-from airflow.hooks.postgres_hook import PostgresHook
-from datetime import datetime, timedelta
+from airflow.hooks import FBCachedDbApiHook
+from datetime import date, datetime, timedelta
 from redshift_east.constants import REDSHIFT_CONN_ID, STAGING_SCRAPES_SCHEMA
 
 default_args = {
@@ -30,14 +30,18 @@ main_dag = DAG(
 )
 
 def get_table_names():
-    hook = PostgresHook(postgres_conn_id=REDSHIFT_CONN_ID)
-    records = hook.get_records("""
-        SELECT table_name::text
-        FROM information_schema.tables
-        WHERE table_schema = 'heroku_public'
-        AND table_name NOT IN ('fivetran_audit')
-        ORDER BY 1
-    """)
+    hook = FBCachedDbApiHook(conn_id=REDSHIFT_CONN_ID)
+    key = PARENT_DAG_NAME + '_get_table_names_' + str(date.today())
+    records = hook.get_records(
+        key=key,
+        sql="""
+            SELECT table_name::text
+            FROM information_schema.tables
+            WHERE table_schema = 'heroku_public'
+            AND table_name NOT IN ('fivetran_audit')
+            ORDER BY 1
+        """,
+    )
     return [x[0] for x in records]
 
 def get_scrape_subdag(table_name):
