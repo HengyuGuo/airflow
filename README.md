@@ -11,7 +11,7 @@ We have an install script for OS X. If you use Windows, please contact astewart 
 
 <pre>
     cd ~
-    git clone https://github.com/FB-PLP/airflow
+    git clone git@github.com:FB-PLP/airflow.git
 </pre>
 
 * Install the airflow software using our script.
