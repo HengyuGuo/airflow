@@ -26,7 +26,7 @@ case "$1" in
     start)
         if [ ! -f "$PID_FILE" ]; then
           echo -n "Starting Airflow Scheduler"
-          sudo -u $RUN_USER nohup $EXEC_SCRIPT scheduler &> $LOG_FILE &
+          sudo -Eu $RUN_USER nohup $EXEC_SCRIPT scheduler &> $LOG_FILE &
           ps aux | grep "airflow scheduler" | grep -v grep | awk '{ print $2 }' > $PID_FILE
         else
           echo -n "Airflow Scheduler is already running"

@@ -27,7 +27,7 @@ case "$1" in
     start)
         if [ ! -f "$PID_FILE" ]; then
           echo -n "Starting Airflow WebServer"
-          sudo -u $RUN_USER nohup $EXEC_SCRIPT webserver -p $PORT --pid $PID_FILE 0<&- &> $LOG_FILE &
+          sudo -Eu $RUN_USER nohup $EXEC_SCRIPT webserver -p $PORT --pid $PID_FILE 0<&- &> $LOG_FILE &
           sudo iptables -t nat -A PREROUTING -p tcp --dport $PROD_PORT -j REDIRECT --to-port $PORT
         else
           echo -n "Airflow WebServer is already running"
