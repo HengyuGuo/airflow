@@ -31,7 +31,9 @@ class FacebookPlugin(AirflowPlugin):
 SNS_TOPIC = 'arn:aws:sns:us-east-1:950587841421:airflow-failures'
 def send_sns(to, subject, html_content, files=None, dryrun=False, cc=None, bcc=None, mime_subtype='mixed'):
     conn = boto.sns.connect_to_region('us-east-1')
-    conn.publish(topic=SNS_TOPIC, subject=subject, message=html_content)
+    # On linux boto, subject argument doesn't work, so let's just concatenate it.
+    message = subject + "\n\n" + html_content
+    conn.publish(topic=SNS_TOPIC, message=message)
 
 # Hacks to make the SNS package available.
 sns_module = imp.new_module('airflowsnshack')
