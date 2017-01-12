@@ -23,7 +23,7 @@ dag = DAG(
 sql = """
     BEGIN;
 
-    CREATE TABLE IF NOT EXISTS quality_of_service.availability_log (
+    CREATE TABLE IF NOT EXISTS wild_west.availability_log (
         ds date,
         id integer,
         starttime timestamp without time zone,
@@ -32,10 +32,10 @@ sql = """
     )
     SORTKEY (ds, id);
 
-    DELETE FROM quality_of_service.availability_log
+    DELETE FROM wild_west.availability_log
     WHERE ds = '{yesterday}';
 
-    INSERT INTO quality_of_service.availability_log
+    INSERT INTO wild_west.availability_log
     SELECT
         '{yesterday}' AS ds,
         query AS id,
