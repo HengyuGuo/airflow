@@ -10,6 +10,8 @@ from operators.redshift_operator import FBRedshiftOperator
 from operators.redshift_to_s3_operator import FBRedshiftToS3Transfer
 from operators.write_signal_operator import FBWriteSignalOperator
 from operators.signal_sensor import FBSignalSensor
+from operators.postgres_to_s3_operator import FBPostgresToS3Operator
+from operators.s3_to_redshift_operator import FBS3ToRedshiftOperator
 
 class FacebookPlugin(AirflowPlugin):
     name = "facebook_plugin"
@@ -18,6 +20,8 @@ class FacebookPlugin(AirflowPlugin):
         FBRedshiftToS3Transfer,
         FBWriteSignalOperator,
         FBSignalSensor,
+        FBPostgresToS3Operator,
+        FBS3ToRedshiftOperator,
     ]
     flask_blueprints = []
     hooks = [
