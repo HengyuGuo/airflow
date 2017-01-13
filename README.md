@@ -5,7 +5,7 @@ Repo for airflow DAGs and plugins
 Airflow works by defining workflows, which are called DAGs. It's called DAG because each workflow is a directed acyclic graph defining dependencies between different operators.
 
 # Set up
-We have an install script for OS X. If you use Windows, please contact astewart and I'll help you.
+Please install this on your EC2 dev server! We wish to cease running from our laptops so that we don't have student data on laptops.
 
 * Clone this repository. It must be deployed to your home directory.
 
@@ -18,7 +18,7 @@ We have an install script for OS X. If you use Windows, please contact astewart 
 
 <pre>
     cd airflow
-    scripts/install_osx.sh
+    sudo scripts/install_ec2.sh
 </pre>
 
 * You should now be able to run the <code>airflow</code> command.

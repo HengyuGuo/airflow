@@ -6,6 +6,7 @@
 #   sudo apt-get install gunicorn
 
 pip install airflow
+pip install JayDeBeApi==0.2.0
 pip install 'airflow[postgres, s3, jdbc, celery, hive]'
 pip install cryptography
 echo 'export AIRFLOW_HOME=$HOME/airflow' >> ~/.bash_profile
