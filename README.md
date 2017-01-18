@@ -18,6 +18,7 @@ Please install this on your EC2 dev server! We wish to cease running from our la
 
 <pre>
     cd airflow
+    sudo scripts/tmp_on_disk_ec2.sh
     sudo scripts/install_ec2.sh
 </pre>
 
