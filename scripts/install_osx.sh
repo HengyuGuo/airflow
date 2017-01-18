@@ -9,3 +9,5 @@ brew install python
 brew cask install java
 $DIR/install_base.sh
 echo 'export JAVA_HOME=$(/usr/libexec/java_home)' >> ~/.bash_profile
+echo 'export AIRFLOW_HOME=$HOME/airflow' >> ~/.bash_profile
+echo 'export CLASSPATH="$CLASSPATH:$HOME/airflow/java/snowflake-jdbc-3.0.3.jar"' >> ~/.bash_profile
