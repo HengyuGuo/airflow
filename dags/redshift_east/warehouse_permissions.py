@@ -56,7 +56,7 @@ permission_groups = {
         'kwerner',
         'palasha',
     ],
-    'etl_tools': ['matillion', 'treasure_data', 'airflow'],
+    'etl_tools': ['matillion', 'treasure_data', 'airflow', 'alooma'],
     'query_tools': ['mode', 'tableau', 'quicksight'],
     'workflow_tools': ['matillion', 'treasure_data', 'airflow'],
 }
@@ -95,7 +95,7 @@ add_members = FBRedshiftOperator(
 
 perms_sql = []
 for schema in schemas:
-    for user in users:
+    for user in user_list:
         perms_sql.append(
             "GRANT ALL ON SCHEMA {schema} TO {user};".format(
                 schema=schema,
