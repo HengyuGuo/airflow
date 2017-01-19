@@ -43,7 +43,7 @@ class FBPostgresToS3Operator(BaseOperator):
             final_sql = "COPY (\n{}\n) TO STDOUT;".format(self.sql)
             logging.info('Writing to {0}: {1}'.format(tmp_file.name, final_sql))
             proc = subprocess.Popen(
-                'sed \'s/\\\\"/\\"/g\' | gzip',
+                'sed \'s/\\\\\\\\/\\\\/g\' | gzip',
                 stdin=subprocess.PIPE,
                 stdout=tmp_file,
                 shell=True,
