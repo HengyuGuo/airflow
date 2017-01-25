@@ -56,9 +56,9 @@ permission_groups = {
         'kwerner',
         'palasha',
     ],
-    'etl_tools': ['matillion', 'treasure_data', 'airflow', 'alooma'],
+    'etl_tools': ['matillion', 'treasure_data', 'airflow', 'alooma', 'airflow_admin'],
     'query_tools': ['mode', 'tableau', 'quicksight'],
-    'workflow_tools': ['matillion', 'treasure_data', 'airflow'],
+    'workflow_tools': ['matillion', 'treasure_data', 'airflow', 'airflow_admin'],
 }
 
 user_list = set()
