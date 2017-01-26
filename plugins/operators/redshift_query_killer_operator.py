@@ -33,7 +33,9 @@ SELECT * FROM (
         REPLACE(LISTAGG(sq.text, '') WITHIN GROUP (ORDER BY sq.sequence), '\\n', '\n') AS sql,
         sq.pid AS pid
     FROM stv_wlm_query_state swqs
-    JOIN stl_querytext sq ON swqs.query = sq.query
+    JOIN stl_querytext sq
+        ON swqs.query = sq.query
+        AND sq.sequence < 327  -- 200 * 327 = 65400 characters which clears the 65535 limit for LISTAGG
     JOIN pg_user u ON sq.userid = u.usesysid
     GROUP BY 1, 2, 3, 4, 5, 7
 ) WHERE sql NOT LIKE '-- Test Query%';
@@ -121,8 +123,9 @@ class FBRedshiftQueryKillerOperator(BaseOperator):
                     kill_sql += "\nCANCEL {} \'Long-running query automatically killed, contact @astewart for more info\';".format(d['pid'])
                     if sns is None:
                         sns = boto.sns.connect_to_region('us-east-1')
-                    message = "Query killer killing query_id {0} for running more than {1} minutes:\n{2}".format(
+                    message = "Query killer killing query_id {0} by user '{1}' for running more than {2} minutes:\n{3}".format(
                         d['query_id'],
+                        d['user'],
                         self.query_ttl_minutes,
                         d['sql'],
                     )
