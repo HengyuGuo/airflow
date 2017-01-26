@@ -7,7 +7,7 @@ from airflow.operators.subdag_operator import SubDagOperator
 from datetime import datetime, timedelta
 from redshift_east.constants import (
     REDSHIFT_CONN_ID,
-    YESTERDAY_MACRO,
+    TOMORROW_MACRO,
 )
 
 default_args = {
@@ -39,7 +39,7 @@ def sub_dag(child_dag, redshift_conn_id, airflow_task_id):
     sql = """
         SELECT JSON_BUILD_OBJECT(
             'ds',
-            '{yesterday}',
+            '{today}',
             'id',
             job_id,
             'starttime',
@@ -53,17 +53,17 @@ def sub_dag(child_dag, redshift_conn_id, airflow_task_id):
         WHERE
             dag_id = 'redshift_availability_minutely' AND
             task_id = '{task_id}' AND
-            start_date >= '{yesterday}' AND
-            end_date < '{today}'
+            start_date >= '{today}' AND
+            end_date < '{tomorrow}'
     """.format(
-        yesterday=YESTERDAY_MACRO,
         task_id=airflow_task_id,
         today='{{ ds }}',
+        tomorrow=TOMORROW_MACRO,
     )
 
     s3_key = '//plp-data-lake/import-staging/availability-check/{0}/{1}.json.gz'.format(
         child_dag,
-        YESTERDAY_MACRO,
+        '{{ ds }}',
     )
 
     scrape = FBPostgresToS3Operator(
@@ -92,8 +92,8 @@ def sub_dag(child_dag, redshift_conn_id, airflow_task_id):
             SORTKEY (ds, id);
 
             DELETE FROM wild_west.availability_log
-            WHERE ds = '{yesterday}';
-        """.format(yesterday=YESTERDAY_MACRO),
+            WHERE ds = '{{ ds }}';
+        """,
         dag=dag,
     )
     load.set_upstream(scrape)

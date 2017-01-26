@@ -5,3 +5,4 @@ STAGING_SCRAPES_SCHEMA='airflow_staging_scrapes'
 # We use a different schema to prevent clobbering the production job.
 DIM_AND_FCT_SCHEMA='airflow_dim_tables'
 YESTERDAY_MACRO='{{ macros.ds_add(ds, -1) }}'
+TOMORROW_MACRO='{{ macros.ds_add(ds, 1) }}'
