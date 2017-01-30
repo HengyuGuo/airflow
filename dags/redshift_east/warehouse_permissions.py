@@ -17,7 +17,12 @@ from airflow.operators import (
 
 from airflow.hooks.postgres_hook import PostgresHook
 from datetime import datetime, timedelta
-from redshift_east.constants import REDSHIFT_ADMIN_CONN_ID, REDSHIFT_CONN_ID, STAGING_SCRAPES_SCHEMA
+from redshift_east.constants import (
+    HEROKU_PUBLIC_SCHEMA,
+    REDSHIFT_ADMIN_CONN_ID,
+    REDSHIFT_CONN_ID,
+    STAGING_SCRAPES_SCHEMA,
+)
 
 default_args = {
     'owner': 'keoki',
@@ -70,9 +75,11 @@ DEFAULT_PERMS = ALL
 schemas = [
     'airflow',
     'asana',
+    HEROKU_PUBLIC_SCHEMA,
     'heroku_public',
     'matillion',
     'public',
+    STAGING_SCRAPES_SCHEMA,
     'staging_scrapes',
     'wild_west',
     'zendesk',

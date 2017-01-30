@@ -1,6 +1,6 @@
 from airflow import DAG
 from airflow.operators import (
-    FBPostgresToS3Operator,
+    FBPostgresToS3JSONOperator,
     FBS3ToRedshiftOperator,
 )
 from airflow.operators.subdag_operator import SubDagOperator
@@ -66,7 +66,7 @@ def sub_dag(child_dag, redshift_conn_id, airflow_task_id):
         '{{ ds }}',
     )
 
-    scrape = FBPostgresToS3Operator(
+    scrape = FBPostgresToS3JSONOperator(
         task_id='scrape',
         sql=sql,
         postgres_conn_id='airflow_store',
@@ -94,6 +94,7 @@ def sub_dag(child_dag, redshift_conn_id, airflow_task_id):
             DELETE FROM wild_west.availability_log
             WHERE ds = '{{ ds }}';
         """,
+        is_json=True,
         dag=dag,
     )
     load.set_upstream(scrape)

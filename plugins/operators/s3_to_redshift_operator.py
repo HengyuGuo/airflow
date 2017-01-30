@@ -32,6 +32,7 @@ class FBS3ToRedshiftOperator(BaseOperator):
             pre_sql='',
             s3_conn_id='s3_default',
             s3_region='us-east-1',
+            is_json=True,
             *args, **kwargs):
         super(FBS3ToRedshiftOperator, self).__init__(*args, **kwargs)
         self.redshift_conn_id = redshift_conn_id
@@ -40,11 +41,23 @@ class FBS3ToRedshiftOperator(BaseOperator):
         self.pre_sql = pre_sql
         self.s3_conn_id = s3_conn_id
         self.s3_region = s3_region
+        self.is_json = is_json
 
     def execute(self, context):
         self.hook = PostgresHook(postgres_conn_id=self.redshift_conn_id)
         self.s3 = FBS3Hook(s3_conn_id=self.s3_conn_id)
         a_key, s_key = self.s3.get_credentials()
+        json_or_tsv = ''
+        if self.is_json:
+            json_or_tsv = """
+                JSON 'auto'
+            """
+        else:
+            json_or_tsv = """
+                DELIMITER AS '\t'
+                ROUNDEC TRIMBLANKS ACCEPTANYDATE COMPUPDATE STATUPDATE
+                FILLRECORD TRUNCATECOLUMNS NULL AS '\\\\N'
+            """
 
         sql = """
             BEGIN;
@@ -55,7 +68,8 @@ class FBS3ToRedshiftOperator(BaseOperator):
             FROM '{s3_path}'
             REGION '{s3_region}'
             CREDENTIALS 'aws_access_key_id={a_key};aws_secret_access_key={s_key}'
-            JSON 'auto' GZIP
+            {json_or_tsv}
+            GZIP
             DATEFORMAT 'auto' TIMEFORMAT 'auto'
             MAXERROR 0;
 
@@ -67,6 +81,7 @@ class FBS3ToRedshiftOperator(BaseOperator):
             s3_region=self.s3_region,
             a_key=a_key,
             s_key=s_key,
+            json_or_tsv=json_or_tsv,
         )
         logging.info('Executing: ' + sql)
         self.hook.run(sql)

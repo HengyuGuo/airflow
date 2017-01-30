@@ -51,6 +51,7 @@ upload_log = FBS3ToRedshiftOperator(
         )
         SORTKEY (killer_run_time, query_id);
     """,
+    is_json=True,
     dag=dag,
 )
 upload_log.set_upstream(query_killer)
