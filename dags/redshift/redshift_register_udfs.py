@@ -6,7 +6,7 @@ from airflow.operators import (
     FBWriteSignalOperator,
 )
 from datetime import datetime, timedelta
-from redshift_east.constants import (
+from redshift.constants import (
     REDSHIFT_CONN_ID,
     STAGING_SCRAPES_SCHEMA,
     DIM_AND_FCT_SCHEMA,

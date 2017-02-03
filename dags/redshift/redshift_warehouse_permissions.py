@@ -17,7 +17,7 @@ from airflow.operators import (
 
 from airflow.hooks.postgres_hook import PostgresHook
 from datetime import datetime, timedelta
-from redshift_east.constants import (
+from redshift.constants import (
     HEROKU_PUBLIC_SCHEMA,
     REDSHIFT_ADMIN_CONN_ID,
     REDSHIFT_CONN_ID,

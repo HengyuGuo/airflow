@@ -1,6 +1,6 @@
 from airflow import DAG
 from airflow.operators import FBRedshiftOperator, FBWriteSignalOperator
-from redshift_east.constants import REDSHIFT_CONN_ID
+from redshift.constants import REDSHIFT_CONN_ID
 
 def sub_dag(
     parent_dag_name,

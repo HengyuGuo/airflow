@@ -7,7 +7,7 @@ from airflow.operators import (
 )
 from airflow.hooks import FBCachedDbApiHook
 from datetime import date, datetime, timedelta
-from redshift_east.constants import REDSHIFT_CONN_ID, STAGING_SCRAPES_SCHEMA
+from redshift.constants import REDSHIFT_CONN_ID, STAGING_SCRAPES_SCHEMA
 
 default_args = {
     'owner': 'astewart',

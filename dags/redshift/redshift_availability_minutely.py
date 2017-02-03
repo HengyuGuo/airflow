@@ -1,11 +1,12 @@
 from airflow import DAG
 from airflow.operators import FBRedshiftOperator
 from datetime import datetime, timedelta
+from redshift.constants import REDSHIFT_NON_ETL_CONN_ID
 
 default_args = {
     'owner': 'astewart',
     'depends_on_past': False,
-    'start_date': datetime(2017, 1, 12),
+    'start_date': datetime(2017, 2, 3),
     'email': ['astewart@summitps.org'],
     'email_on_failure': False,
     'email_on_retry': False,
@@ -26,21 +27,11 @@ dag = DAG(
 # the "airflow" user is marked with the etl_users GROUP
 # and thus uses the etl queue. To track the availability
 # of the normal query queue we use the "airflow_nonetl" user.
-
-west_coast_availability_check = FBRedshiftOperator(
-    task_id='west_coast_availability_check',
-    sql="""-- Availability check query
-        SELECT * FROM latest_scrape_sites LIMIT 5;
-    """,
-    postgres_conn_id='redshift_west_nonetl',
-    dag=dag,
-)
-
-east_coast_availability_check = FBRedshiftOperator(
-    task_id='east_coast_availability_check',
+availability_check = FBRedshiftOperator(
+    task_id='availability_check',
     sql="""-- Availability check query
         SELECT * FROM staging_scrapes.sites LIMIT 5;
     """,
-    postgres_conn_id='redshift_east_nonetl',
+    postgres_conn_id=REDSHIFT_NON_ETL_CONN_ID,
     dag=dag,
 )

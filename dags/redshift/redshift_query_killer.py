@@ -4,7 +4,7 @@ from airflow.operators import (
     FBS3ToRedshiftOperator,
 )
 from datetime import datetime, timedelta
-from redshift_east.constants import REDSHIFT_ADMIN_CONN_ID
+from redshift.constants import REDSHIFT_ADMIN_CONN_ID
 
 default_args = {
     'owner': 'astewart',

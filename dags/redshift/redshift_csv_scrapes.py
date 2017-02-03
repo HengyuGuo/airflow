@@ -6,7 +6,7 @@ from airflow.operators import (
 )
 from airflow.hooks import FBCachedDbApiHook
 from datetime import date, datetime, timedelta
-from redshift_east.constants import (
+from redshift.constants import (
     HEROKU_PUBLIC_SCHEMA,
     REDSHIFT_CONN_ID,
     SLAVE_DB_CONN_ID,

@@ -26,7 +26,7 @@ Please install this on your EC2 dev server! We wish to cease running from our la
 
 * Do the tutorial: https://airflow.incubator.apache.org/tutorial.html. This will teach you how to use airflow.
 
-* Write a DAG in the dags/redshift_east folder and figure out how to use <code>airflow test</code> to run it. Here's an example:
+* Write a DAG in the dags/redshift folder and figure out how to use <code>airflow test</code> to run it. Here's an example:
 
 <pre>
     airflow test redshift_dim_courses_historical wait_for_courses 2016-12-12

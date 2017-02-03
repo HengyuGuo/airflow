@@ -5,6 +5,7 @@ This file defines constants shared between different airflow jobs.
 # Connection IDs
 REDSHIFT_CONN_ID = 'redshift_east'
 REDSHIFT_ADMIN_CONN_ID = 'redshift_east_admin'
+REDSHIFT_NON_ETL_CONN_ID = 'redshift_east_nonetl' # Only used to simulate non-ETL user, like mode
 SLAVE_DB_CONN_ID = 'postgres_heroku_slave'
 
 # Schema names

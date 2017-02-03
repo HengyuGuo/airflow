@@ -2,12 +2,12 @@ from airflow import DAG
 from airflow.operators import FBSignalSensor
 from airflow.operators.subdag_operator import SubDagOperator
 from datetime import datetime, timedelta
-from redshift_east.constants import (
+from redshift.constants import (
     REDSHIFT_CONN_ID,
     STAGING_SCRAPES_SCHEMA,
     DIM_AND_FCT_SCHEMA,
 )
-from redshift_east import dim_helper
+from redshift import dim_helper
 
 default_args = {
     'owner': 'astewart',

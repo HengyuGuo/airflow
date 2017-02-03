@@ -5,7 +5,7 @@ http://airflow.readthedocs.org/en/latest/tutorial.html
 from airflow import DAG
 from airflow.operators.postgres_operator import PostgresOperator
 from datetime import datetime, timedelta
-from redshift_east.constants import REDSHIFT_CONN_ID
+from redshift.constants import REDSHIFT_CONN_ID
 
 default_args = {
     'owner': 'airflow',
