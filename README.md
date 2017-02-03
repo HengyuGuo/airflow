@@ -36,7 +36,7 @@ Please install this on your EC2 dev server! We wish to cease running from our la
 We use phabricator for code review. Please use <code>arc diff</code> and add at least astewart as reviewer.
 
 # Web interface
-The web interface is hosted at http://ec2-107-21-30-86.compute-1.amazonaws.com/ to view job status.
+The web interface is hosted at http://ec2-54-147-243-143.compute-1.amazonaws.com/ to view job status.
 
 That EC2 machine runs both the webserver and scheduler and will actually run your job. As long as your DAG is checked in, this machine will automatically start running your job.
 
