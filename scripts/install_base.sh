@@ -9,3 +9,4 @@ pip install airflow
 pip install JayDeBeApi==0.2.0
 pip install 'airflow[postgres, s3, jdbc, celery, hive, gcp_api]'
 pip install cryptography
+pip install flask_bcrypt
