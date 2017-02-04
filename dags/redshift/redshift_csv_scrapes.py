@@ -60,7 +60,12 @@ def get_scrape_subdag(table_name):
         schedule_interval=SCHEDULE_INTERVAL,
     )
 
-    s3_key = '//plp-data-lake/import-staging/csv-scrapes/{}/{}.tsv.gz'.format(
+    data_s3_key = '//plp-data-lake/import-staging/csv-scrapes/{}/{}.tsv.gz'.format(
+        table_name,
+        '{{ ds }}',
+    )
+
+    schema_s3_key = '//plp-data-lake/import-staging/csv-scrapes/{}/schemata/{}.json'.format(
         table_name,
         '{{ ds }}',
     )
@@ -69,7 +74,8 @@ def get_scrape_subdag(table_name):
         task_id='copy_to_s3_transaction',
         postgres_conn_id=SLAVE_DB_CONN_ID,
         table_name=table_name,
-        s3_key=s3_key,
+        data_s3_key=data_s3_key,
+        schema_s3_key=schema_s3_key,
         dag=dag
     )
 
@@ -81,7 +87,7 @@ def get_scrape_subdag(table_name):
     #         schema=HEROKU_PUBLIC_SCHEMA,
     #         table_name=table_name,
     #     ),
-    #     s3_key=s3_key,
+    #     s3_key=data_s3_key,
     #     pre_sql="""
     #         DROP TABLE IF EXISTS {schema}.{table_name} CASCADE;
     #

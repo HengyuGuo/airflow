@@ -1,3 +1,4 @@
+import json
 import logging
 import tempfile
 import subprocess
@@ -59,11 +60,13 @@ class FBPostgresToS3JSONOperator(BaseOperator):
 
 class FBPostgresToS3CSVOperator(BaseOperator):
     """
-    This class copies `table_name` from a postgres server to S3 in a CSV format.
+    This class copies `table_name` from a postgres server to S3 in a CSV format. It also copies the
+    table's column names and types in a similar format.
     """
     template_fields = (
       'table_name',
-      's3_key',
+      'data_s3_key',
+      'schema_s3_key',
     )
 
     @apply_defaults
@@ -71,14 +74,16 @@ class FBPostgresToS3CSVOperator(BaseOperator):
             self,
             postgres_conn_id,
             table_name,
-            s3_key,
+            data_s3_key,
+            schema_s3_key,
             s3_conn_id='s3_default',
             replace=True,
             *args, **kwargs):
         super(FBPostgresToS3CSVOperator, self).__init__(*args, **kwargs)
         self.table_name = table_name
         self.postgres_conn_id = postgres_conn_id
-        self.s3_key = s3_key
+        self.data_s3_key = data_s3_key
+        self.schema_s3_key = schema_s3_key
         self.s3_conn_id = s3_conn_id
         self.replace = replace
 
@@ -98,5 +103,21 @@ class FBPostgresToS3CSVOperator(BaseOperator):
             self.hook.copy_expert(final_sql, proc.stdin)
             proc.communicate()
 
-            logging.info('Writing to s3: ' + self.s3_key)
-            self.s3.load_file(filename=tmp_file.name, key=self.s3_key, replace=self.replace)
+            logging.info('Writing to s3: ' + self.data_s3_key)
+            self.s3.load_file(filename=tmp_file.name, key=self.data_s3_key, replace=self.replace)
+
+        schema_sql = """
+            SELECT attname AS column_name,
+                   format_type(atttypid, atttypmod) AS type
+            FROM pg_attribute
+            WHERE attrelid = '{table_name}'::regclass
+              AND attnum > 0
+              AND NOT attisdropped
+            ORDER BY attnum
+        """.format(table_name=self.table_name)
+        logging.info('Getting records: {}'.format(schema_sql))
+        records = self.hook.get_records(schema_sql)
+        records_json = json.dumps(records)
+
+        logging.info('Writing to s3: ' + self.schema_s3_key)
+        self.s3.load_string(string_data=records_json, key=self.schema_s3_key, replace=self.replace)
