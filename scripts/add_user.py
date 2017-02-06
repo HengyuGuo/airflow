@@ -12,7 +12,7 @@ user = PasswordUser(models.User())
 username = sys.argv[1]
 user.username = username
 user.email = sys.argv[2]
-password = uuid.uuid4().bytes.encode("base64")
+password = uuid.uuid4().bytes.encode("base64")[0:12]
 user.password = password
 session = settings.Session()
 session.add(user)
