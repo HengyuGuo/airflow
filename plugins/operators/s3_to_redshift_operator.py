@@ -1,9 +1,12 @@
+import json
 import logging
 
 from airflow.hooks.S3_hook import S3Hook
 from airflow.hooks.postgres_hook import PostgresHook
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
+
+from redshift.constants import REDSHIFT_DATA_TYPES
 
 class FBS3Hook(S3Hook):
     def get_credentials(self):
@@ -21,6 +24,7 @@ class FBS3ToRedshiftOperator(BaseOperator):
       'table',
       's3_key',
       'pre_sql',
+      'schema_s3_key',
     )
 
     @apply_defaults
@@ -33,6 +37,8 @@ class FBS3ToRedshiftOperator(BaseOperator):
             s3_conn_id='s3_default',
             s3_region='us-east-1',
             is_json=True,
+            drop_and_create=False,
+            schema_s3_key=None,
             *args, **kwargs):
         super(FBS3ToRedshiftOperator, self).__init__(*args, **kwargs)
         self.redshift_conn_id = redshift_conn_id
@@ -42,11 +48,47 @@ class FBS3ToRedshiftOperator(BaseOperator):
         self.s3_conn_id = s3_conn_id
         self.s3_region = s3_region
         self.is_json = is_json
+        self.drop_and_create = drop_and_create
+        self.schema_s3_key = schema_s3_key
+
+    def _build_pre_sql(self):
+        # A helper function that only needs to be called in the `_build_pre_sql` function
+        def determine_schema():
+            schema_sql = ''
+            logging.info('Reading from s3: ' + self.schema_s3_key)
+            schema_key = self.s3.get_key(self.schema_s3_key)
+            # Schema must be stored as a JSONified array
+            schema_array = json.loads(schema_key.get_contents_as_string())
+            schema_strings = []
+
+            for column in schema_array:
+                # Replace any non-supported data types with 'text'
+                if column[1].lower().split('(')[0] not in REDSHIFT_DATA_TYPES:
+                    column[1] = 'text'
+
+                schema_strings.append(' '.join(column))
+
+            # Extra spaces added to make it look good in the logs
+            return ',\n                '.join(schema_strings)
+
+        pre_sql = """
+            DROP TABLE IF EXISTS {table};
+
+            CREATE TABLE IF NOT EXISTS {table} (
+                {schema}
+            ) DISTSTYLE EVEN;
+        """.format(
+            table=self.table,
+            schema=determine_schema(),
+        )
+
+        return pre_sql
 
     def execute(self, context):
         self.hook = PostgresHook(postgres_conn_id=self.redshift_conn_id)
         self.s3 = FBS3Hook(s3_conn_id=self.s3_conn_id)
         a_key, s_key = self.s3.get_credentials()
+
         json_or_tsv = ''
         if self.is_json:
             json_or_tsv = """
@@ -58,6 +100,9 @@ class FBS3ToRedshiftOperator(BaseOperator):
                 ROUNDEC TRIMBLANKS ACCEPTANYDATE COMPUPDATE STATUPDATE
                 FILLRECORD TRUNCATECOLUMNS NULL AS '\\\\N'
             """
+
+        if self.drop_and_create:
+            self.pre_sql += self._build_pre_sql()
 
         sql = """
             BEGIN;

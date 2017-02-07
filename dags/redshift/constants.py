@@ -18,3 +18,36 @@ DIM_AND_FCT_SCHEMA = 'airflow_dim_tables'
 # Handy macros
 YESTERDAY_MACRO = '{{ macros.ds_add(ds, -1) }}'
 TOMORROW_MACRO = '{{ macros.ds_add(ds, 1) }}'
+
+# Legal Redshift data types
+REDSHIFT_DATA_TYPES = [
+    'smallint',
+    'int2',
+    'integer',
+    'int',
+    'int4',
+    'bigint',
+    'int8',
+    'decimal',
+    'numeric',
+    'real',
+    'float4',
+    'double precision',
+    'float8',
+    'float',
+    'boolean',
+    'bool',
+    'char',
+    'character'
+    'nchar',
+    'bpchar',
+    'varchar',
+    'character varying',
+    'nvarchar',
+    'text',
+    'date'
+    'timestamp',
+    'timestamp without time zone',
+    'timestamptz',
+    'timestamp with time zone',
+]
