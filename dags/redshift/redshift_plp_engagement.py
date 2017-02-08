@@ -7,7 +7,7 @@ from airflow.operators import (
     FBSignalSensor,
     FBWriteSignalOperator,
 )
-from redshift_east.constants import (
+from redshift.constants import (
     REDSHIFT_CONN_ID,
     DIM_AND_FCT_SCHEMA,
 )
@@ -253,4 +253,3 @@ for agg in aggregations:
         task_id='visitation_' + '_'.join(agg),
     )
     visitation.set_upstream(datelist)
-
