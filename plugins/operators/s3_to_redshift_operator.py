@@ -62,6 +62,7 @@ class FBS3ToRedshiftOperator(BaseOperator):
             schema_strings = []
 
             for column in schema_array:
+                column[0] = '"{}"'.format(column[0])
                 # Replace any non-supported data types with 'text'
                 if column[1].lower().split('(')[0] not in REDSHIFT_DATA_TYPES:
                     column[1] = 'text'
