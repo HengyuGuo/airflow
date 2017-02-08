@@ -6,33 +6,37 @@ from airflow.plugins_manager import AirflowPlugin
 
 from hooks.cached_db_api_hook import FBCachedDbApiHook
 
-from operators.constants import SNS_CONNECTION_REGION, FAILURE_SNS_TOPIC
-from operators.redshift_operator import FBHistoricalOperator, FBRedshiftOperator
-from operators.redshift_to_s3_operator import FBRedshiftToS3Transfer
-from operators.write_signal_operator import FBWriteSignalOperator
-from operators.signal_sensor import FBSignalSensor
-from operators.postgres_to_s3_operator import FBPostgresToS3JSONOperator, FBPostgresToS3CSVOperator
-from operators.s3_to_redshift_operator import FBS3ToRedshiftOperator
-from operators.redshift_query_killer_operator import FBRedshiftQueryKillerOperator
-from operators.fb_historical_check_operator import FBHistoricalCheckOperator
-from operators.sns_operator import FBSNSOperator
+from operators.constants import FAILURE_SNS_TOPIC, SNS_CONNECTION_REGION
+from operators.csv_to_json_operator import FBCSVToJSONOperator
 from operators.external_dagrun_sensor import FBExternalDagRunSensor
+from operators.fb_historical_check_operator import FBHistoricalCheckOperator
+from operators.postgres_to_s3_operator import FBPostgresToS3JSONOperator, FBPostgresToS3CSVOperator
+from operators.redshift_operator import FBHistoricalOperator, FBRedshiftOperator
+from operators.redshift_query_killer_operator import FBRedshiftQueryKillerOperator
+from operators.redshift_to_s3_operator import FBRedshiftToS3Transfer
+from operators.s3_key_sensor import FBS3KeySensor
+from operators.s3_to_redshift_operator import FBS3ToRedshiftOperator
+from operators.signal_sensor import FBSignalSensor
+from operators.sns_operator import FBSNSOperator
+from operators.write_signal_operator import FBWriteSignalOperator
 
 class FacebookPlugin(AirflowPlugin):
     name = "facebook_plugin"
     operators = [
-        FBHistoricalOperator,
-        FBRedshiftOperator,
-        FBRedshiftToS3Transfer,
-        FBWriteSignalOperator,
-        FBSignalSensor,
-        FBPostgresToS3JSONOperator,
-        FBPostgresToS3CSVOperator,
-        FBS3ToRedshiftOperator,
-        FBRedshiftQueryKillerOperator,
-        FBHistoricalCheckOperator,
-        FBSNSOperator,
+        FBCSVToJSONOperator,
         FBExternalDagRunSensor,
+        FBHistoricalCheckOperator,
+        FBHistoricalOperator,
+        FBPostgresToS3CSVOperator,
+        FBPostgresToS3JSONOperator,
+        FBRedshiftOperator,
+        FBRedshiftQueryKillerOperator,
+        FBRedshiftToS3Transfer,
+        FBS3KeySensor,
+        FBS3ToRedshiftOperator,
+        FBSNSOperator,
+        FBSignalSensor,
+        FBWriteSignalOperator,
     ]
     flask_blueprints = []
     hooks = [
