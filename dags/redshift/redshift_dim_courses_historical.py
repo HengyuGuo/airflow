@@ -12,7 +12,7 @@ from redshift import dim_helper
 default_args = {
     'owner': 'astewart',
     'depends_on_past': False,
-    'start_date': datetime(2016, 12, 11),
+    'start_date': datetime(2017, 2, 6),
     'email': ['astewart@summitps.org'],
     'email_on_failure': True,
     'email_on_retry': False,
@@ -20,7 +20,7 @@ default_args = {
     'retry_delay': timedelta(minutes=5),
 }
 
-PARENT_DAG_NAME = 'redshift_dim_courses_historical'
+PARENT_DAG_NAME = 'redshift_dim_courses'
 SCHEDULE_INTERVAL = '@daily'
 
 dag = DAG(PARENT_DAG_NAME, default_args=default_args, schedule_interval=SCHEDULE_INTERVAL)
@@ -51,7 +51,7 @@ dim_helper = SubDagOperator(
         input_schema=STAGING_SCRAPES_SCHEMA,
         output_schema=DIM_AND_FCT_SCHEMA,
         fields_sql="""
-            id integer,
+            id integer NOT NULL,
             name character varying(1020),
             grade_level integer,
             academic_year integer,
@@ -64,7 +64,7 @@ dim_helper = SubDagOperator(
             subject_category character varying(256),
             owner_id integer,
             owner_type character varying(256),
-            as_of date
+            as_of date NOT NULL
         """,
         select_sql="""
             SELECT
@@ -82,8 +82,8 @@ dim_helper = SubDagOperator(
                 c.owner_id AS owner_id,
                 c.owner_type AS owner_type,
                 TO_DATE('{{ ds }}', 'YYYY-MM-DD') AS as_of
-            FROM {{ params.input_schema }}.courses c
-            JOIN {{ params.input_schema }}.subjects s
+            FROM "{{ params.input_schema }}"."courses_{{ ds }}" c
+            JOIN "{{ params.input_schema }}"."subjects_{{ ds }}" s
             ON (c.subject_id = s.id);
         """,
         sortkey='as_of, id',
