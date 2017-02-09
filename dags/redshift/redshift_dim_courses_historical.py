@@ -86,6 +86,7 @@ dim_helper = SubDagOperator(
             JOIN "{{ params.input_schema }}"."subjects_{{ ds }}" s
             ON (c.subject_id = s.id);
         """,
+        distkey='id',
         sortkey='as_of, id',
     ),
     dag=dag,

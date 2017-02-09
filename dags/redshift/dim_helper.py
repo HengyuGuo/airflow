@@ -11,6 +11,7 @@ def sub_dag(
     output_schema,
     fields_sql,
     select_sql,
+    distkey,
     sortkey='as_of, id',
     conn_id=REDSHIFT_CONN_ID,
 ):
@@ -29,6 +30,7 @@ def sub_dag(
             CREATE TABLE IF NOT EXISTS {{ params.output_schema }}."{{ params.dim_table }}_historical" (
                 {{ params.fields_sql }}
             )
+            DISTKEY ({{ params.distkey }})
             SORTKEY ({{ params.sortkey }});
 
             DELETE FROM {{ params.output_schema }}."{{ params.dim_table }}_historical" WHERE as_of = '{{ ds }}';
@@ -51,6 +53,7 @@ def sub_dag(
           'fields_sql': fields_sql,
           'select_sql': select_sql,
           'sortkey': sortkey,
+          'distkey': distkey
         },
         dag=dag,
     )
