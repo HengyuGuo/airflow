@@ -107,15 +107,6 @@ create = FBRedshiftOperator(
     sql="\n".join(creates.values()),
     task_id='creates',
 )
-
-wait_http_logs_prod = FBSignalSensor(
-    dag=dag,
-    conn_id=REDSHIFT_CONN_ID,
-    schema=DIM_AND_FCT_SCHEMA,
-    table='http_logs_prod',
-    task_id='wait_http_logs_prod',
-)
-
 daily = FBRedshiftOperator(
     dag=dag,
     params=params,
@@ -140,7 +131,6 @@ daily = FBRedshiftOperator(
     task_id='daily',
 )
 daily.set_upstream(create)
-daily.set_upstream(wait_http_logs_prod)
 
 datelist = FBRedshiftOperator(
     dag=dag,
