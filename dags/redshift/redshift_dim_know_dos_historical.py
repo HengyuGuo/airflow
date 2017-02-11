@@ -77,6 +77,7 @@ dim_helper = SubDagOperator(
             ON (kd.subject_id = s.id);
         """,
         sortkey='as_of, id',
+        distkey='id',
     ),
     dag=dag,
 )
