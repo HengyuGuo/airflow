@@ -7,7 +7,7 @@ from airflow.plugins_manager import AirflowPlugin
 from hooks.cached_db_api_hook import FBCachedDbApiHook
 
 from operators.constants import FAILURE_SNS_TOPIC
-from operators.redshift_operator import FBRedshiftOperator
+from operators.redshift_operator import FBHistoricalOperator, FBRedshiftOperator
 from operators.redshift_to_s3_operator import FBRedshiftToS3Transfer
 from operators.write_signal_operator import FBWriteSignalOperator
 from operators.signal_sensor import FBSignalSensor
@@ -18,6 +18,7 @@ from operators.redshift_query_killer_operator import FBRedshiftQueryKillerOperat
 class FacebookPlugin(AirflowPlugin):
     name = "facebook_plugin"
     operators = [
+        FBHistoricalOperator,
         FBRedshiftOperator,
         FBRedshiftToS3Transfer,
         FBWriteSignalOperator,
