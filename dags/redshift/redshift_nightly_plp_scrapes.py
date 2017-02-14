@@ -7,7 +7,7 @@ from airflow.operators import (
 )
 from airflow.hooks import FBCachedDbApiHook
 from datetime import date, datetime, timedelta
-from redshift.constants import REDSHIFT_CONN_ID, STAGING_SCRAPES_SCHEMA
+from redshift.constants import REDSHIFT_CONN_ID, STAGING_SCRAPES_WRITE_SCHEMA
 
 default_args = {
     'owner': 'astewart',
@@ -87,7 +87,7 @@ def get_scrape_subdag(table_name):
             COMMIT;
         """,
         params={
-          'schema': STAGING_SCRAPES_SCHEMA,
+          'schema': STAGING_SCRAPES_WRITE_SCHEMA,
           'table_name': table_name,
         },
         dag=dag,
@@ -96,7 +96,7 @@ def get_scrape_subdag(table_name):
     signal = FBWriteSignalOperator(
         conn_id=REDSHIFT_CONN_ID,
         task_id='write_signal',
-        schema=STAGING_SCRAPES_SCHEMA,
+        schema=STAGING_SCRAPES_WRITE_SCHEMA,
         table=table_name,
         dag=dag,
     )
@@ -104,7 +104,7 @@ def get_scrape_subdag(table_name):
 
     unload = FBRedshiftToS3Transfer(
         task_id='unload',
-        schema=STAGING_SCRAPES_SCHEMA,
+        schema=STAGING_SCRAPES_WRITE_SCHEMA,
         table='{{ params.table_name }}_{{ ds }}',
         s3_bucket='plp-data-lake',
         s3_key='scrapes-opt-prod-airflow/{{ params.table_name }}/as_of={{ ds }}/',

@@ -6,11 +6,7 @@ from airflow.operators import (
     FBWriteSignalOperator,
 )
 from datetime import datetime, timedelta
-from redshift.constants import (
-    REDSHIFT_CONN_ID,
-    STAGING_SCRAPES_SCHEMA,
-    DIM_AND_FCT_SCHEMA,
-)
+from redshift.constants import REDSHIFT_CONN_ID
 
 default_args = {
     'owner': 'keoki',

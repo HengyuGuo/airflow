@@ -10,7 +10,8 @@ SLAVE_DB_CONN_ID = 'postgres_heroku_slave'
 
 # Schema names
 HEROKU_PUBLIC_SCHEMA = 'airflow_heroku_public'
-STAGING_SCRAPES_SCHEMA = 'airflow_staging_scrapes'
+STAGING_SCRAPES_SCHEMA = 'staging_scrapes'
+STAGING_SCRAPES_WRITE_SCHEMA = 'airflow_staging_scrapes'
 # Note: In matillion (prod), the schema for these tables is "public".
 # We use a different schema to prevent clobbering the production job.
 DIM_AND_FCT_SCHEMA = 'airflow_dim_tables'

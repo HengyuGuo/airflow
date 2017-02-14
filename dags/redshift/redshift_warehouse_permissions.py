@@ -22,6 +22,7 @@ from redshift.constants import (
     REDSHIFT_ADMIN_CONN_ID,
     REDSHIFT_CONN_ID,
     STAGING_SCRAPES_SCHEMA,
+    STAGING_SCRAPES_WRITE_SCHEMA,
 )
 
 default_args = {
@@ -52,7 +53,7 @@ UPDATE = "UPDATE"
 # the defines the users who we want to be added to the groups. Key is group,
 # value is list of users
 permission_groups = {
-    'analysts': ['ashah', 'keoki', 'ilan', 'palasha', 'hcli', 'quicksight'],
+    'analysts': ['ashah', 'keoki', 'ilan', 'palasha', 'hcli', 'quicksight', 'tpham'],
     'data_eng': [
         'astewart',
         'hcli',
@@ -60,6 +61,7 @@ permission_groups = {
         'keoki',
         'kwerner',
         'palasha',
+        'tpham',
     ],
     'etl_tools': ['matillion', 'treasure_data', 'airflow', 'alooma', 'airflow_admin'],
     'query_tools': ['mode', 'tableau', 'quicksight'],
@@ -80,7 +82,7 @@ schemas = [
     'matillion',
     'public',
     STAGING_SCRAPES_SCHEMA,
-    'staging_scrapes',
+    STAGING_SCRAPES_WRITE_SCHEMA,
     'wild_west',
     'zendesk',
 ]
