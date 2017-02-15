@@ -1,4 +1,8 @@
-import redshift.constants as constants
+from redshift.constants import (
+    REDSHIFT_CONN_ID,
+    STAGING_SCRAPES_SCHEMA,
+    DIM_AND_FCT_SCHEMA,
+)
 
 from airflow.operators.postgres_operator import PostgresOperator
 from fb_required_args import require_keyword_args
@@ -11,9 +15,9 @@ class FBHistoricalOperator(FBRedshiftOperator):
     @require_keyword_args(['task_id', 'view_name', 'select_sql', 'dag'])
     def __init__(
         self,
-        redshift_conn_id=constants.REDSHIFT_CONN_ID,
-        input_schema='airflow_staging_scrapes',
-        output_schema='airflow_dim_tables',
+        redshift_conn_id=REDSHIFT_CONN_ID,
+        input_schema=STAGING_SCRAPES_SCHEMA,
+        output_schema=DIM_AND_FCT_SCHEMA,
         *args,
         **kwargs
     ):
