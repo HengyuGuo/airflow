@@ -14,7 +14,7 @@ from redshift.constants import (
 default_args = {
     'owner': 'hcli',
     'depends_on_past': False,
-    'start_date': datetime(2016, 12, 12),
+    'start_date': datetime(2016, 2, 15),
     'email': ['hcli@summitps.org'],
     'email_on_failure': True,
     'email_on_retry': False,
@@ -22,10 +22,7 @@ default_args = {
     'retry_delay': timedelta(minutes=5),
 }
 
-PARENT_DAG_NAME = 'redshift_dim_know_dos'
-SCHEDULE_INTERVAL = '@daily'
-
-dag = DAG(PARENT_DAG_NAME, default_args=default_args, schedule_interval=SCHEDULE_INTERVAL)
+dag = DAG('redshift_dim_know_dos', default_args=default_args, schedule_interval='@daily')
 
 wait_for_know_dos = FBSignalSensor(
     task_id='wait_for_know_dos',
