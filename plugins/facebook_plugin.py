@@ -14,6 +14,7 @@ from operators.signal_sensor import FBSignalSensor
 from operators.postgres_to_s3_operator import FBPostgresToS3JSONOperator, FBPostgresToS3CSVOperator
 from operators.s3_to_redshift_operator import FBS3ToRedshiftOperator
 from operators.redshift_query_killer_operator import FBRedshiftQueryKillerOperator
+from operators.fb_historical_check_operator import FBHistoricalCheckOperator
 
 class FacebookPlugin(AirflowPlugin):
     name = "facebook_plugin"
@@ -27,6 +28,7 @@ class FacebookPlugin(AirflowPlugin):
         FBPostgresToS3CSVOperator,
         FBS3ToRedshiftOperator,
         FBRedshiftQueryKillerOperator,
+        FBHistoricalCheckOperator,
     ]
     flask_blueprints = []
     hooks = [

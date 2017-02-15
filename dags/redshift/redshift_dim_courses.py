@@ -1,6 +1,9 @@
 from airflow import DAG
-from airflow.operators import FBHistoricalOperator, FBSignalSensor
-from airflow.operators.subdag_operator import SubDagOperator
+from airflow.operators import (
+    FBSignalSensor,
+    FBHistoricalCheckOperator,
+    FBHistoricalOperator,
+)
 from datetime import datetime, timedelta
 from redshift.constants import (
     REDSHIFT_CONN_ID,
@@ -66,3 +69,11 @@ select_and_insert = FBHistoricalOperator(
     dag=dag,
 )
 select_and_insert.set_upstream([wait_for_courses, wait_for_subjects])
+
+check = FBHistoricalCheckOperator(
+    task_id='check',
+    conn_id=REDSHIFT_CONN_ID,
+    table='{schema}.dim_courses_historical'.format(schema=DIM_AND_FCT_SCHEMA),
+    dag=dag,
+)
+check.set_upstream(select_and_insert)
