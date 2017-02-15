@@ -52,3 +52,4 @@ REDSHIFT_DATA_TYPES = [
     'timestamptz',
     'timestamp with time zone',
 ]
+MAX_VARCHAR_COLUMN_LENGTH = 65535

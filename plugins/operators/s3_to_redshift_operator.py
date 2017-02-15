@@ -6,7 +6,10 @@ from airflow.hooks.postgres_hook import PostgresHook
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
-from redshift.constants import REDSHIFT_DATA_TYPES
+from redshift.constants import (
+    MAX_VARCHAR_COLUMN_LENGTH,
+    REDSHIFT_DATA_TYPES,
+)
 
 class FBS3Hook(S3Hook):
     def get_credentials(self):
@@ -63,8 +66,16 @@ class FBS3ToRedshiftOperator(BaseOperator):
 
             for column in schema_array:
                 column[0] = '"{}"'.format(column[0])
+
+                # We're assuming well-formed type information
+                type_and_len = column[1].lower().split('(')
                 # Replace any non-supported data types with 'text'
-                if column[1].lower().split('(')[0] not in REDSHIFT_DATA_TYPES:
+                if type_and_len[0] not in REDSHIFT_DATA_TYPES:
+                    column[1] = 'text'
+                # If the text is too long, truncate it
+                if (len(type_and_len) > 1
+                        and type_and_len[0] in ('character varying', 'varchar', 'nvarchar', 'text')
+                        and int(type_and_len[1][:-1]) > MAX_VARCHAR_COLUMN_LENGTH):
                     column[1] = 'text'
 
                 schema_strings.append(' '.join(column))
