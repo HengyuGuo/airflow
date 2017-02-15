@@ -53,8 +53,11 @@ class FBHistoricalOperator(FBRedshiftOperator):
         create_view = """
             DROP VIEW IF EXISTS {{ params.output_schema }}."{{ params.view_name }}";
             CREATE VIEW {{ params.output_schema }}."{{ params.view_name }}" AS
-                SELECT * FROM {{ params.output_schema }}."{{ params.historical_table }}"
-                WHERE as_of = '{{ ds }}';
+                SELECT * FROM {{ params.output_schema }}."{{ params.historical_table }}" 
+                WHERE as_of =  (
+                    SELECT MAX(as_of)
+                    FROM {{ params.output_schema }}."{{ params.historical_table }}" 
+                );
         """
         view_signal = """
             {% if not test_mode %}
