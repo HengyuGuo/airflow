@@ -29,7 +29,7 @@ Please install this on your EC2 dev server! We wish to cease running from our la
 * Write a DAG in the dags/redshift folder and figure out how to use <code>airflow test</code> to run it. Here's an example:
 
 <pre>
-    airflow test redshift_dim_courses_historical wait_for_courses 2016-12-12
+    airflow test redshift_dim_courses wait_for_courses 2017-02-15
 </pre>
 
 # Code review
