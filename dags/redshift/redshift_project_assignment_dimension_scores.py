@@ -14,7 +14,7 @@ from redshift.constants import (
 default_args = {
     'owner': 'tpham',
     'depends_on_past': False,
-    'start_date': datetime(2017, 2, 9),
+    'start_date': datetime(2017, 2, 16),
     'email': ['tpham@summitps.org'],
     'email_on_failure': True,
     'email_on_retry': False,
@@ -23,8 +23,8 @@ default_args = {
 }
 
 dag = DAG('redshift_project_assignment_dimension_scores', 
-        default_args=default_args, 
-        schedule_interval='@daily')
+    default_args=default_args, 
+    schedule_interval='@daily')
 
 wait_for_project_assignments = FBSignalSensor(
     task_id='wait_for_project_assignments',
@@ -61,7 +61,8 @@ create_project_assignment_dimension_scores = FBRedshiftOperator(
         updated_at timestamp without time zone,
         created_by numeric(10,0),                    
         updated_by numeric(10,0),
-        draft_score character varying(1024),                                                                                                         self_assessed_score character varying(1024)
+        draft_score character varying(1024),
+        self_assessed_score character varying(1024)
     )
     SORTKEY (as_of, project_id, student_id);
     COMMIT;
