@@ -11,7 +11,6 @@ from redshift.constants import (
     STAGING_SCRAPES_SCHEMA,
     DIM_AND_FCT_SCHEMA,
 )
-from redshift import dim_helper
 
 default_args = {
     'owner': 'astewart',
