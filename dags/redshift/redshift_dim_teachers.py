@@ -114,7 +114,6 @@ insert_dim_teachers = FBHistoricalOperator(
     ON s.district_id = d.id
     """,
     dag=dag,
-    conn_id=REDSHIFT_CONN_ID,
 )
 
 insert_dim_teachers.set_upstream([

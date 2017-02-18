@@ -85,7 +85,6 @@ create_dim_students = FBRedshiftOperator(
 
 insert_dim_students = FBHistoricalOperator(
     task_id='insert_dim_students',
-    conn_id=REDSHIFT_CONN_ID,
     view_name='dim_students',
     select_sql="""
     SELECT
