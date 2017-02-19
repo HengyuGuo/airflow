@@ -5,3 +5,4 @@ unittests.cfg
 *.pyc
 airflow.db
 unittests.db
+.idea/*
