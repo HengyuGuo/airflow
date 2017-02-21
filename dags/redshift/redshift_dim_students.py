@@ -73,7 +73,8 @@ create_dim_students = FBRedshiftOperator(
         district_name character varying(256),
         nces_district_id integer,
         as_of date,
-        current_gpa numeric(16,12)
+        current_gpa numeric(16,12),
+        state_student_id character varying(65535)
     ) 
     DISTKEY (id)
     SORTKEY (as_of, id, site_id);
@@ -112,7 +113,8 @@ insert_dim_students = FBHistoricalOperator(
         d.name as district_name,
         d.nces_district_id,
         '{{ ds }}' as as_of,
-        u.current_gpa
+        u.current_gpa,
+        u.state_id as state_student_id 
     FROM (
         SELECT * 
         FROM {{ params.input_schema }}."users_{{ ds }}"
