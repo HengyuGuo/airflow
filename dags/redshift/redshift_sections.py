@@ -15,7 +15,7 @@ from redshift.constants import (
 default_args = {
     'owner': 'tpham',
     'depends_on_past': False,
-    'start_date': datetime(2017, 2, 16),
+    'start_date': datetime(2017, 2, 21),
     'email': ['tpham@summitps.org'],
     'email_on_failure': True,
     'email_on_retry': False,
@@ -23,7 +23,7 @@ default_args = {
     'retry_delay': timedelta(minutes=5),
 }
 
-dag = DAG('redshift_dim_sections', default_args=default_args, schedule_interval='@daily')
+dag = DAG('redshift_sections', default_args=default_args, schedule_interval='@daily')
 
 wait_for_sections = FBSignalSensor(
     task_id='wait_for_sections',
@@ -33,12 +33,12 @@ wait_for_sections = FBSignalSensor(
     dag=dag,
 )
 
-create_dim_sections = FBRedshiftOperator(
-    task_id='create_dim_sections',
+create_sections = FBRedshiftOperator(
+    task_id='create_sections',
     sql="""
     BEGIN;
-    CREATE TABLE IF NOT EXISTS {schema}.dim_sections_historical (
-        id numeric(10,0) NOT NULL,
+    CREATE TABLE IF NOT EXISTS {schema}.sections_historical (
+        id numeric(10,0),
         sis_id character varying(65535),
         name character varying(255),
         clever_id character varying(65535),
@@ -56,10 +56,10 @@ create_dim_sections = FBRedshiftOperator(
     postgres_conn_id=REDSHIFT_CONN_ID,
 )
 
-insert_dim_sections = FBHistoricalOperator(
+insert_sections = FBHistoricalOperator(
     redshift_conn_id=REDSHIFT_CONN_ID,
-    task_id='insert_dim_sections',
-    view_name='dim_sections',
+    task_id='insert_sections',
+    view_name='sections',
     select_sql="""
     SELECT
         s.id,
@@ -78,7 +78,7 @@ insert_dim_sections = FBHistoricalOperator(
     dag=dag,
 )
 
-insert_dim_sections.set_upstream([
+insert_sections.set_upstream([
     wait_for_sections, 
-    create_dim_sections
+    create_sections
 ])
