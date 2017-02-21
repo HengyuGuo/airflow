@@ -69,7 +69,7 @@ insert_course_assignment_sections = FBHistoricalOperator(
         created_at,
         updated_at,
         '{{ ds }}' as as_of
-    FROM {{ params.input_schema }}.course_assignment_sections_{{ ds }} 
+    FROM {{ params.input_schema }}."course_assignment_sections_{{ ds }}" 
     """,
     dag=dag,
 )
