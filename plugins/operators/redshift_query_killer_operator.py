@@ -9,7 +9,7 @@ from airflow.hooks.postgres_hook import PostgresHook
 from airflow.hooks.S3_hook import S3Hook
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
-from operators.constants import MESSAGE_SNS_TOPIC
+from operators.constants import SNS_CONNECTION_REGION, MESSAGE_SNS_TOPIC
 
 def json_datetime_handler(x):
     if isinstance(x, datetime.datetime):
@@ -122,7 +122,7 @@ class FBRedshiftQueryKillerOperator(BaseOperator):
                         raise Exception('Test data unexpectedly was run with !dry_run.')
                     kill_sql += "\nCANCEL {} \'Long-running query automatically killed, contact @astewart for more info\';".format(d['pid'])
                     if sns is None:
-                        sns = boto.sns.connect_to_region('us-east-1')
+                        sns = boto.sns.connect_to_region(SNS_CONNECTION_REGION)
                     message = "Query killer killing query_id {0} by user '{1}' for running more than {2} minutes:\n{3}".format(
                         d['query_id'],
                         d['user'],

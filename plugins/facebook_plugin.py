@@ -6,7 +6,7 @@ from airflow.plugins_manager import AirflowPlugin
 
 from hooks.cached_db_api_hook import FBCachedDbApiHook
 
-from operators.constants import FAILURE_SNS_TOPIC
+from operators.constants import SNS_CONNECTION_REGION, FAILURE_SNS_TOPIC
 from operators.redshift_operator import FBHistoricalOperator, FBRedshiftOperator
 from operators.redshift_to_s3_operator import FBRedshiftToS3Transfer
 from operators.write_signal_operator import FBWriteSignalOperator
@@ -15,6 +15,8 @@ from operators.postgres_to_s3_operator import FBPostgresToS3JSONOperator, FBPost
 from operators.s3_to_redshift_operator import FBS3ToRedshiftOperator
 from operators.redshift_query_killer_operator import FBRedshiftQueryKillerOperator
 from operators.fb_historical_check_operator import FBHistoricalCheckOperator
+from operators.sns_operator import FBSNSOperator
+from operators.external_dagrun_sensor import FBExternalDagRunSensor
 
 class FacebookPlugin(AirflowPlugin):
     name = "facebook_plugin"
@@ -29,6 +31,8 @@ class FacebookPlugin(AirflowPlugin):
         FBS3ToRedshiftOperator,
         FBRedshiftQueryKillerOperator,
         FBHistoricalCheckOperator,
+        FBSNSOperator,
+        FBExternalDagRunSensor,
     ]
     flask_blueprints = []
     hooks = [
@@ -40,7 +44,7 @@ class FacebookPlugin(AirflowPlugin):
 
 # SNS handling code.
 def send_sns(to, subject, html_content, files=None, dryrun=False, cc=None, bcc=None, mime_subtype='mixed'):
-    conn = boto.sns.connect_to_region('us-east-1')
+    conn = boto.sns.connect_to_region(SNS_CONNECTION_REGION)
     # On linux boto, subject argument doesn't work, so let's just concatenate it.
     message = subject + "\n\n" + html_content
     conn.publish(topic=FAILURE_SNS_TOPIC, message=message)
