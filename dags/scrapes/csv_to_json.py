@@ -7,6 +7,12 @@ from airflow.operators import (
 from airflow.hooks import FBCachedDbApiHook
 
 from datetime import date, datetime, timedelta
+from scrapes.constants import SCRAPE_TABLES_TO_SKIP
+from scrapes.utils import (
+    get_data_s3_key,
+    get_schema_s3_key,
+    get_json_s3_key,
+)
 from redshift.constants import SLAVE_DB_CONN_ID
 
 default_args = {
@@ -29,28 +35,6 @@ main_dag = DAG(
     schedule_interval=SCHEDULE_INTERVAL,
 )
 
-# If we use this query often enough, it may be worth it to store these results as a file in S3
-def get_table_names():
-    hook = FBCachedDbApiHook(conn_id=SLAVE_DB_CONN_ID)
-    key = PARENT_DAG_NAME + '_get_table_names_' + str(date.today())
-    records = hook.get_records(
-        key=key,
-        sql="""
-            SELECT table_name
-            FROM information_schema.tables
-            WHERE table_schema = 'public'
-              AND table_type = 'BASE TABLE'
-              AND table_name NOT IN (
-                'google_tokens',
-                'schema_migrations',
-                'data_imports',
-                'versions'
-              )
-            ORDER BY table_name
-        """,
-    )
-    return [x[0] for x in records]
-
 def get_csv_to_json_subdag(table_name):
     dag = DAG(
         '{}.{}'.format(PARENT_DAG_NAME, table_name),
@@ -58,20 +42,9 @@ def get_csv_to_json_subdag(table_name):
         schedule_interval=SCHEDULE_INTERVAL,
     )
 
-    data_s3_key = '//plp-data-lake/import-staging/csv-scrapes/{}/{}.tsv.gz'.format(
-        table_name,
-        '{{ ds }}',
-    )
-
-    schema_s3_key = '//plp-data-lake/import-staging/csv-scrapes/{}/schemata/{}.json'.format(
-        table_name,
-        '{{ ds }}',
-    )
-
-    json_s3_key = '//plp-data-lake/import-staging/csv-scrapes/{}/{}.json.gz'.format(
-        table_name,
-        '{{ ds }}',
-    )
+    data_s3_key = get_data_s3_key(table_name)
+    schema_s3_key = get_schema_s3_key(table_name)
+    json_s3_key = get_json_s3_key(table_name)
 
     wait_for_data = FBS3KeySensor(
         task_id='wait_for_data',
@@ -95,8 +68,9 @@ def get_csv_to_json_subdag(table_name):
 
     return dag
 
-table_names = get_table_names()
-for table_name in table_names:
+for table_name in FBCachedDbApiHook.gen_postgres_tables():
+    if table_name in SCRAPE_TABLES_TO_SKIP:
+        continue
     SubDagOperator(
         subdag=get_csv_to_json_subdag(table_name),
         task_id=table_name,

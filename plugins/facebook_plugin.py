@@ -19,6 +19,9 @@ from operators.s3_to_redshift_operator import FBS3ToRedshiftOperator
 from operators.signal_sensor import FBSignalSensor
 from operators.sns_operator import FBSNSOperator
 from operators.write_signal_operator import FBWriteSignalOperator
+from operators.external_dagrun_sensor import FBExternalDagRunSensor
+from operators.snowflake_operator import FBSnowflakeOperator, FBSnowflakeCreateStageOperator
+from operators.s3_to_snowflake_operator import FBS3ToSnowflakeOperator
 
 class FacebookPlugin(AirflowPlugin):
     name = "facebook_plugin"
@@ -34,8 +37,11 @@ class FacebookPlugin(AirflowPlugin):
         FBRedshiftToS3Transfer,
         FBS3KeySensor,
         FBS3ToRedshiftOperator,
-        FBSNSOperator,
+        FBS3ToSnowflakeOperator,
         FBSignalSensor,
+        FBSnowflakeCreateStageOperator,
+        FBSnowflakeOperator,
+        FBSNSOperator,
         FBWriteSignalOperator,
     ]
     flask_blueprints = []

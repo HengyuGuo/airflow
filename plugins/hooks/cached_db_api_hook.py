@@ -1,7 +1,9 @@
+from datetime import date
 import json
 import os
 import tempfile
 
+from redshift.constants import SLAVE_DB_CONN_ID
 from airflow.hooks.base_hook import BaseHook
 
 TMP_DIR = 'airflow-cache/'
@@ -39,3 +41,20 @@ class FBCachedDbApiHook(BaseHook):
 
     def tmp_path(self, key):
         return self.tmp_dir() + key
+
+    @classmethod
+    def gen_postgres_tables(cls):
+        hook = cls(conn_id=SLAVE_DB_CONN_ID)
+        key = 'gen_postgres_tables_' + str(date.today())
+        records = hook.get_records(
+            key=key,
+            sql="""
+                SELECT table_name
+                FROM information_schema.tables
+                WHERE table_schema = 'public'
+                  AND table_type = 'BASE TABLE'
+                ORDER BY table_name;
+            """,
+        )
+        for record in records:
+            yield record[0]
