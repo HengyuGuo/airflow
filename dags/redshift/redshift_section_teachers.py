@@ -66,7 +66,8 @@ select_and_insert = FBHistoricalOperator(
             teacher_id,
             created_at,
             updated_at,
-            enum_name_for_value('visibility', visibility, 'section_teachers', 'SectionTeacher')
+            enum_name_for_value('visibility', visibility, 'section_teachers', 'SectionTeacher'),
+            '{{ ds }}' AS as_of
         FROM {{ params.input_schema }}."section_teachers_{{ ds }}"
     """,
     dag=dag,
