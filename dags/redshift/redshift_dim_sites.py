@@ -54,7 +54,8 @@ create_dim_sites = FBRedshiftOperator(
         nces_district_id numeric(10,0),
         district_name character varying(65535),
         as_of date,
-        status character varying(256)
+        status character varying(256),
+        school_type character varying(65535)
     );
     COMMIT;
     """.format(schema=DIM_AND_FCT_SCHEMA),
@@ -76,10 +77,23 @@ insert_dim_sites = FBHistoricalOperator(
         d.nces_district_id,
         d.name as district_name,
         '{{ ds }}' as as_of,
-        enum_name_for_value('status', status, 'sites', 'Site') as status
+        enum_name_for_value('status', status, 'sites', 'Site') as status,
+        CASE 
+            WHEN summit.site_id IS NOT NULL
+            THEN 'SPS'
+            WHEN slp.site_id IS NOT NULL
+            THEN 'SLP'
+            WHEN public.enum_name_for_value('enrollment_group', s.enrollment_group, 'sites', 'Site') like '%d2t%'
+            THEN 'IT'
+            ELSE null 
+        END as school_type
     FROM {{ params.input_schema }}."sites_{{ ds }}" s
     LEFT JOIN {{ params.input_schema}}."districts_{{ ds }}" d
     ON s.district_id = d.id
+    LEFT JOIN public.summit_site_info summit
+    ON summit.site_id = s.id
+    LEFT JOIN wild_west.slp_site_info slp
+    ON slp.site_id = s.id
     """,
     dag=dag,
 )
@@ -87,5 +101,5 @@ insert_dim_sites = FBHistoricalOperator(
 insert_dim_sites.set_upstream([
     wait_for_sites, 
     wait_for_districts,
-    create_dim_sites
+    create_dim_sites,
 ])
