@@ -19,15 +19,15 @@ class FBS3KeySensor(BaseSensorOperator):
             retry_delay=timedelta(seconds=600),
             retries=144,  # 600 seconds * 144 = 1 day
             *args, **kwargs):
-        self.s3_key = kwargs['s3_key']
+        s3_key = kwargs['s3_key']
+        del kwargs['s3_key']
+        super(FBS3KeySensor, self).__init__(*args, **kwargs)
+        self.s3_key = s3_key
         self.s3_conn_id = s3_conn_id
         self.email_on_failure = True
         self.email_on_retry = False
         self.retry_delay = retry_delay
         self.retries = retries
-
-        del kwargs['s3_key']
-        super(FBS3KeySensor, self).__init__(*args, **kwargs)
 
     def poke(self, context):
         self.s3 = S3Hook(s3_conn_id=self.s3_conn_id)
