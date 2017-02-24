@@ -44,7 +44,10 @@ class FBCSVToJSONOperator(BaseOperator):
             if '\\N' in row[schema[0]]:
                 # Just set NULL values to None
                 row[schema[0]] = None
-            elif schema[1] in POSTGRES_DATA_TYPES_TO_PYTHON_TYPES:
+            elif '[' in schema[1]:
+                # Ignore array types aggressively
+                continue
+            elif schema[1].lower().split('(')[0] in POSTGRES_DATA_TYPES_TO_PYTHON_TYPES:
                 row[schema[0]] = POSTGRES_DATA_TYPES_TO_PYTHON_TYPES[schema[1]](row[schema[0]])
             else:
                 # Keep everything, including date/time/character/text/arrays/etc., as a string
