@@ -35,7 +35,7 @@ class FBS3KeySensor(BaseSensorOperator):
         full_url = 's3://' + bucket + '/' + key
 
         logging.info('Poking for key : {full_url}'.format(**locals()))
-        if hook.check_for_key(key, bucket):
+        if self.s3.check_for_key(key, bucket):
             return True
 
         raise AirflowException('Not present -- retry. If this is a test, then run the dependent job to fix the S3 hook issue.')
