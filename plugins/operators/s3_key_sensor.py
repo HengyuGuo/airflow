@@ -30,8 +30,8 @@ class FBS3KeySensor(BaseSensorOperator):
         super(FBS3KeySensor, self).__init__(*args, **kwargs)
 
     def poke(self, context):
-        hook = S3Hook(s3_conn_id=self.s3_conn_id)
-        bucket, key = s3.parse_s3_url(self.s3_key)
+        self.s3 = S3Hook(s3_conn_id=self.s3_conn_id)
+        bucket, key = self.s3.parse_s3_url(self.s3_key)
         full_url = 's3://' + bucket + '/' + key
 
         logging.info('Poking for key : {full_url}'.format(**locals()))
