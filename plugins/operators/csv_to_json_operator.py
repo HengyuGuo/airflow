@@ -50,7 +50,7 @@ class FBCSVToJSONOperator(BaseOperator):
                 # Keep everything, including date/time/character/text/arrays/etc., as a string
                 continue
 
-        return json.dumps(row)
+        return json.dumps(row, separators=(',',':'))
 
     def execute(self, context):
         self.s3 = S3Hook(s3_conn_id=self.s3_conn_id)
