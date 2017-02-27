@@ -13,6 +13,7 @@ from snowflake.constants import (
     PASSTHROUGH_TYPE,
     STRING_TYPE,
     S3_BUCKET,
+    DATE_TYPE,
 )
 
 from fb_required_args import require_keyword_args
@@ -34,6 +35,7 @@ class FBS3ToSnowflakeOperator(BaseOperator):
             s3_conn_id='s3_default',
             drop_and_create=False,
             schema_s3_key=None,
+            forced_string_columns=[],
             *args, **kwargs):
         self.snowflake_conn_id = snowflake_conn_id
         self.table = kwargs['table']
@@ -47,6 +49,7 @@ class FBS3ToSnowflakeOperator(BaseOperator):
         self.stage = kwargs['stage']
         self.drop_and_create = drop_and_create
         self.schema_s3_key = schema_s3_key
+        self.forced_string_columns = forced_string_columns
 
         del kwargs['table']
         del kwargs['data_s3_key']
@@ -66,11 +69,16 @@ class FBS3ToSnowflakeOperator(BaseOperator):
             schema_strings = []
 
             for column in schema_array:
-                column[0] = '"{}"'.format(column[0])
+                column_name = column[0]
+                column[0] = '"{}"'.format(column_name)
 
                 # We're assuming well-formed type information
                 type_and_len = column[1].lower().split('(')
-                if type_and_len[0] in POSTGRES_TO_SNOWFLAKE_DATA_TYPES:
+                use_precise_type = (
+                    type_and_len[0] in POSTGRES_TO_SNOWFLAKE_DATA_TYPES and
+                    column_name not in self.forced_string_columns
+                )
+                if use_precise_type:
                     new_type = POSTGRES_TO_SNOWFLAKE_DATA_TYPES[type_and_len[0]]
                     if new_type != PASSTHROUGH_TYPE:
                         column[1] = new_type
@@ -115,4 +123,4 @@ class FBS3ToSnowflakeOperator(BaseOperator):
             s3_key=s3_key,
         )
         sql.append(copy_sql)
-        self.hook.run(sql)
+        self.hook.run(['BEGIN;'] + sql + ['COMMIT;'])

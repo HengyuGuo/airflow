@@ -18,6 +18,7 @@ from snowflake.constants import (
     CSV_STAGE,
     STAGING_SCRAPES_SCHEMA,
     SNOWFLAKE_CONN_ID,
+    POSTGRES_COLUMNS_WITH_INVALID_DATES,
 )
 
 default_args = {
@@ -73,6 +74,7 @@ def get_scrape_subdag(table_name):
         stage=CSV_STAGE,
         drop_and_create=True,
         schema_s3_key=schema_s3_key,
+        forced_string_columns=POSTGRES_COLUMNS_WITH_INVALID_DATES.get(table_name, []),
         dag=dag,
     )
     upload_table.set_upstream([wait_for_data_s3_key, wait_for_schema_s3_key])
@@ -87,7 +89,7 @@ create_stage = FBSnowflakeCreateStageOperator(
         FIELD_DELIMITER = '\\t'
         RECORD_DELIMITER = '\\n'
         ESCAPE = '\\\\'
-        ESCAPE_UNENCLOSED_FIELD = NONE
+        NULL_IF = ('\\\\N', '\\\\\\N', '\\\\\\\\N')
     """,
     dag=main_dag,
 )

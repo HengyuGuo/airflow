@@ -50,3 +50,7 @@ POSTGRES_TO_SNOWFLAKE_DATA_TYPES = {
     'json': JSON_TYPE,
     'jsonb': JSON_TYPE,
 }
+
+POSTGRES_COLUMNS_WITH_INVALID_DATES = {
+    'reflection_log_entries': ['due_on'],
+}
