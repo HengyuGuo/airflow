@@ -1,9 +1,17 @@
+from collections import OrderedDict
+
 SNOWFLAKE_CONN_ID = 'snowflake'
+SNOWFLAKE_ADMIN_CONN_ID = 'snowflake_admin'
 
 S3_BUCKET = 'plp-data-lake'
 CSV_STAGE = 'stg_csv'
 
+AIRFLOW_SCHEMA = 'airflow'
 STAGING_SCRAPES_SCHEMA = 'staging_scrapes'
+SCHEMAS = [
+    AIRFLOW_SCHEMA,
+    STAGING_SCRAPES_SCHEMA,
+]
 
 PASSTHROUGH_TYPE = 'passthru'
 BOOLEAN_TYPE = 'BOOLEAN'
@@ -54,3 +62,15 @@ POSTGRES_TO_SNOWFLAKE_DATA_TYPES = {
 POSTGRES_COLUMNS_WITH_INVALID_DATES = {
     'reflection_log_entries': ['due_on'],
 }
+
+# Used in snowflake_set_role_permissions for setting up users.
+ROLES_TO_USERS = OrderedDict([
+    ('analyst_role', []),
+    ('data_eng_role', ['astewart']),
+    ('query_tools_role', ['mode', 'tableau']),
+    ('workflow_tools_role', ['airflow', 'airflow_admin']),
+
+    # Do not change those below.
+    ('ACCOUNTADMIN', ['airflow_admin']),
+    ('SYSADMIN', ['airflow_admin']),
+])
