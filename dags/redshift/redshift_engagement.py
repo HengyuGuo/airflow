@@ -26,7 +26,7 @@ default_args = {
 }
 
 dag = DAG(
-    'redshift_plp_engagement',
+    'redshift_engagement',
     default_args=default_args,
     schedule_interval='@daily',
 )
@@ -37,40 +37,44 @@ def def_delete(table):
 
 creates = {
     'daily': """
-        CREATE TABLE IF NOT EXISTS {{ params.daily }} (
+        CREATE TABLE IF NOT EXISTS {{ params.schema }}.{{ params.daily }} (
             as_of DATE NOT NULL,
-            acting_user_id int4,
-            curr_user_id int4,
-            controller varchar(256),
-            action varchar(256),
-            status varchar(256),
-            num_action int4
-        );
+            acting_user_id bigint,
+            curr_user_id bigint,
+            controller varchar(65535),
+            action varchar(65535),
+            status varchar(65535),
+            num_action bigint
+        )
+        DISTKEY (curr_user_id)
+        SORTKEY (as_of, curr_user_id, acting_user_id, controller, action, status);
     """,
     'datelist': """
-        CREATE TABLE IF NOT EXISTS {{ params.datelist }} (
+        CREATE TABLE IF NOT EXISTS {{ params.schema }}.{{ params.datelist }} (
             as_of DATE NOT NULL,
-            acting_user_id int4,
-            curr_user_id int4,
-            controller varchar(256),
-            action varchar(256),
-            status varchar(256),
-            todays_num_action int4,
-            datelist_int int4,
+            acting_user_id bigint,
+            curr_user_id bigint,
+            controller varchar(65535),
+            action varchar(65535),
+            status varchar(65535),
+            todays_num_action bigint,
+            datelist_int bigint,
             first_action_date date,
             last_action_date date
-        );
+        )
+        DISTKEY (curr_user_id)
+        SORTKEY (as_of, curr_user_id, acting_user_id, controller, action, status);
     """,
     'visitation': """
-        CREATE TABLE IF NOT EXISTS {{ params.visitation }} (
+        CREATE TABLE IF NOT EXISTS {{ params.schema }}.{{ params.visitation }} (
             as_of DATE NOT NULL,
             aggregation varchar(64),
-            curr_user_id int4,
-            controller varchar(256),
-            action varchar(256),
-            status varchar(256),
-            todays_num_action int4,
-            datelist_int int4,
+            curr_user_id bigint,
+            controller varchar(65535),
+            action varchar(65535),
+            status varchar(65535),
+            todays_num_action bigint,
+            datelist_int bigint,
             first_action_date date,
             last_action_date date,
             l1 int2,
@@ -79,7 +83,9 @@ creates = {
             l1_ga_status varchar(16),
             l7_ga_status varchar(16),
             l28_ga_status varchar(16)
-        );
+        )
+        DISTKEY (curr_user_id)
+        SORTKEY (as_of, aggregation, curr_user_id, controller, action, status);
     """,
 }
 
@@ -94,9 +100,10 @@ aggregations = [
 activity_cols = ['controller', 'action', 'status']
 
 params = {
-    'daily': 'fct_engagement_daily',
-    'datelist': 'fct_engagement_datelist',
-    'visitation': 'fct_engagement_visitation',
+    'schema': DIM_AND_FCT_SCHEMA,
+    'daily': 'engagement_daily',
+    'datelist': 'engagement_datelist',
+    'visitation': 'engagement_visitation',
     'datelist_max': 2**30,
 }
 
@@ -104,15 +111,18 @@ create = FBRedshiftOperator(
     dag=dag,
     params=params,
     postgres_conn_id=REDSHIFT_CONN_ID,
-    sql="\n".join(creates.values()),
+    sql=creates.values(),
     task_id='creates',
 )
 daily = FBRedshiftOperator(
     dag=dag,
     params=params,
     postgres_conn_id=REDSHIFT_CONN_ID,
-    sql=def_delete("{{ params.daily }}") + """
-        INSERT INTO {{ params.daily }}
+    sql=[
+        'BEGIN;',
+        def_delete("{{ params.schema }}.{{ params.daily }}"),
+        """
+        INSERT INTO {{ params.schema }}.{{ params.daily }}
         SELECT
             timestamp::date AS as_of,
             acting_user_id,
@@ -126,8 +136,10 @@ daily = FBRedshiftOperator(
             timestamp::date = '{{ ds }}'
             AND (acting_user_id IS NOT NULL OR curr_user_id IS NOT NULL)
         GROUP BY
-            1, 2, 3, 4, 5, 6
-    """,
+            1, 2, 3, 4, 5, 6;
+        """,
+        'COMMIT;',
+    ],
     task_id='daily',
 )
 daily.set_upstream(create)
@@ -137,8 +149,11 @@ datelist = FBRedshiftOperator(
     params=params,
     postgres_conn_id=REDSHIFT_CONN_ID,
     depends_on_past=True,
-    sql=def_delete("{{ params.datelist }}") + """
-        INSERT INTO {{ params.datelist }}
+    sql=[
+        'BEGIN;',
+        def_delete("{{ params.schema }}.{{ params.datelist }}"),
+        """
+        INSERT INTO {{ params.schema }}.{{ params.datelist }}
         SELECT
             CAST('{{ds}}' AS DATE) as_of,
             COALESCE(d.acting_user_id, dl.acting_user_id) AS acting_user_id,
@@ -167,14 +182,16 @@ datelist = FBRedshiftOperator(
         AND dl.action = d.action
         AND dl.status = d.status
         AND d.as_of = '{{ ds }}'
-        WHERE dl.as_of = '{{ macros.ds_add(ds, -1) }}'
-    """,
+        WHERE dl.as_of = '{{ macros.ds_add(ds, -1) }}';
+        """,
+        'COMMIT;',
+    ],
     task_id='datelist',
 )
 datelist.set_upstream(daily)
 
 visitation_query = """
-    INSERT INTO {{ params.visitation }}
+    INSERT INTO {{ params.schema }}.{{ params.visitation }}
     SELECT
         CAST('{{ ds }}' AS date) AS as_of,
         aggregation,
@@ -210,9 +227,9 @@ visitation_query = """
         FROM {{ params.datelist }}
         WHERE as_of = '{{ ds }}'
         {{ params.groupby }}
-    ) a
-
+    ) a;
 """
+
 for agg in aggregations:
     aggregation = ",".join(agg)
     params['aggregation'] = aggregation
@@ -231,7 +248,7 @@ for agg in aggregations:
     params['groupby'] = 'GROUP BY ' + ','.join(groupby_vals)
 
     delete = """
-        DELETE FROM {{ params.visitation }} WHERE as_of = '{{ ds }}'
+        DELETE FROM {{ params.schema }}.{{ params.visitation }} WHERE as_of = '{{ ds }}'
             AND aggregation = '{{ params.aggregation }}';
     """
 
@@ -239,7 +256,12 @@ for agg in aggregations:
         dag=dag,
         params=params,
         postgres_conn_id=REDSHIFT_CONN_ID,
-        sql=delete + visitation_query,
+        sql=[
+            'BEGIN;',
+            delete,
+            visitation_query,
+            'COMMIT;',
+        ],
         task_id='visitation_' + '_'.join(agg),
     )
     visitation.set_upstream(datelist)
