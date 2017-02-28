@@ -91,7 +91,8 @@ insert_dim_sites = FBHistoricalOperator(
         CASE 
             WHEN summit.site_id IS NOT NULL
             THEN 'SPS'
-            WHEN slp.site_id IS NOT NULL
+            WHEN slp.site_id IS NOT NULL 
+                AND public.enum_name_for_value('enrollment_group', s.enrollment_group, 'sites', 'Site') IN ('glt_cohort_1', 'glt_cohort_2')
             THEN 'SLP'
             WHEN public.enum_name_for_value('enrollment_group', s.enrollment_group, 'sites', 'Site') like '%d2t%'
             THEN 'IT'
