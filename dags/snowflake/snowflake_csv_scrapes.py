@@ -4,6 +4,7 @@ from airflow.operators import (
     FBSnowflakeCreateStageOperator,
     FBS3KeySensor,
     FBS3ToSnowflakeOperator,
+    FBWriteSignalOperator,
 )
 from airflow.hooks import FBCachedDbApiHook
 
@@ -78,6 +79,15 @@ def get_scrape_subdag(table_name):
         dag=dag,
     )
     upload_table.set_upstream([wait_for_data_s3_key, wait_for_schema_s3_key])
+
+    write_signal = FBWriteSignalOperator(
+        conn_id=SNOWFLAKE_CONN_ID,
+        task_id='write_signal',
+        schema=STAGING_SCRAPES_SCHEMA,
+        table=table_name,
+        dag=dag,
+    )
+    write_signal.set_upstream(upload_table)
     return dag
 
 create_stage = FBSnowflakeCreateStageOperator(
