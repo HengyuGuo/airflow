@@ -14,10 +14,6 @@ STAGING_SCRAPES_SCHEMA = 'staging_scrapes'
 STAGING_SCRAPES_WRITE_SCHEMA = 'airflow_staging_scrapes'
 DIM_AND_FCT_SCHEMA = 'public'
 
-# Handy macros
-YESTERDAY_MACRO = '{{ macros.ds_add(ds, -1) }}'
-TOMORROW_MACRO = '{{ macros.ds_add(ds, 1) }}'
-
 # Legal Redshift data types
 REDSHIFT_DATA_TYPES = [
     'smallint',

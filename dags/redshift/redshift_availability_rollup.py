@@ -5,10 +5,11 @@ from airflow.operators import (
 )
 from airflow.operators.subdag_operator import SubDagOperator
 from datetime import datetime, timedelta
-from redshift.constants import (
-    REDSHIFT_CONN_ID,
+from constants import (
+    DEFAULT_SCHEDULE_INTERVAL,
     TOMORROW_MACRO,
 )
+from redshift.constants import REDSHIFT_CONN_ID
 
 default_args = {
     'owner': 'astewart',
@@ -24,7 +25,7 @@ default_args = {
 dag = DAG(
     'redshift_availability_rollup',
     default_args=default_args,
-    schedule_interval='@daily',
+    schedule_interval=DEFAULT_SCHEDULE_INTERVAL,
 )
 
 sql = """
