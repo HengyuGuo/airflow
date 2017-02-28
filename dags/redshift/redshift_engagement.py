@@ -174,15 +174,36 @@ datelist = FBRedshiftOperator(
             END AS datelist_int,
             COALESCE(dl.first_action_date, d.as_of) AS first_action_date,
             COALESCE(d.as_of, dl.last_action_date) AS last_action_date
-        FROM {{ params.datelist }} dl
-        FULL OUTER JOIN {{ params.daily }} d
+        FROM (
+            SELECT
+                acting_user_id,
+                curr_user_id,
+                controller,
+                action,
+                status,
+                datelist_int,
+                first_action_date,
+                last_action_date
+            FROM {{ params.schema }}.{{ params.datelist }}
+            WHERE as_of = '{{ macros.ds_add(ds, -1) }}'
+        ) dl
+        FULL OUTER JOIN (
+            SELECT
+                as_of,
+                acting_user_id,
+                curr_user_id,
+                controller,
+                action,
+                status,
+                num_action
+            FROM {{ params.schema }}.{{ params.daily }}
+            WHERE as_of = '{{ ds }}'
+        ) d
         ON dl.acting_user_id = d.acting_user_id
         AND dl.curr_user_id = d.curr_user_id
         AND dl.controller = d.controller
         AND dl.action = d.action
-        AND dl.status = d.status
-        AND d.as_of = '{{ ds }}'
-        WHERE dl.as_of = '{{ macros.ds_add(ds, -1) }}';
+        AND dl.status = d.status;
         """,
         'COMMIT;',
     ],
@@ -224,7 +245,7 @@ visitation_query = """
             CAST(DATEDIFF('day',
                 MIN(first_action_date), CAST('{{ ds }}' AS date)
             ) AS INT) AS days_since_first_action
-        FROM {{ params.datelist }}
+        FROM {{ params.schema }}.{{ params.datelist }}
         WHERE as_of = '{{ ds }}'
         {{ params.groupby }}
     ) a;
