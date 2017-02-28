@@ -18,7 +18,7 @@ from redshift.constants import SLAVE_DB_CONN_ID
 default_args = {
     'owner': 'ilan',
     'depends_on_past': False,
-    'start_date': datetime(2017, 2, 3),
+    'start_date': datetime(2017, 2, 27),
     'email': ['igoodman@summitps.org'],
     'email_on_failure': True,
     'email_on_retry': False,

@@ -110,7 +110,7 @@ class FBS3ToRedshiftOperator(BaseOperator):
             json_or_tsv = """
                 DELIMITER AS '\t'
                 ROUNDEC TRIMBLANKS ACCEPTANYDATE COMPUPDATE STATUPDATE
-                FILLRECORD TRUNCATECOLUMNS NULL AS '\\\\N'
+                FILLRECORD TRUNCATECOLUMNS NULL AS '\\\\\\\\N'
             """
 
         if self.drop_and_create:

@@ -92,7 +92,7 @@ class FBPostgresToS3CSVOperator(BaseOperator):
         self.s3 = S3Hook(s3_conn_id=self.s3_conn_id)
 
         with tempfile.NamedTemporaryFile('w+b') as tmp_file:
-            final_sql = "COPY {} TO STDOUT;".format(self.table_name)
+            final_sql = "COPY {} TO STDOUT WITH NULL '\\\\N';".format(self.table_name)
             logging.info('Writing to {0}: {1}'.format(tmp_file.name, final_sql))
             proc = subprocess.Popen(
                 'gzip',

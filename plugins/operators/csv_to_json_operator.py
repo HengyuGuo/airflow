@@ -41,7 +41,7 @@ class FBCSVToJSONOperator(BaseOperator):
     def _jsonify_row_with_types(self, row, schema_array):
         # Convert types
         for schema in schema_array:
-            if '\\N' in row[schema[0]]:
+            if row[schema[0]] == '\\N':
                 # Just set NULL values to None
                 row[schema[0]] = None
             elif '[' in schema[1]:
@@ -53,7 +53,7 @@ class FBCSVToJSONOperator(BaseOperator):
                 # Keep everything, including date/time/character/text/arrays/etc., as a string
                 continue
 
-        return json.dumps(row, separators=(',',':'))
+        return json.dumps(row, separators=(',', ':'))
 
     def execute(self, context):
         self.s3 = S3Hook(s3_conn_id=self.s3_conn_id)
@@ -79,7 +79,13 @@ class FBCSVToJSONOperator(BaseOperator):
             reader = csv.DictReader(
                 reopen,
                 fieldnames=[col[0] for col in schema_array],
-                dialect='excel-tab',
+                delimiter='\t',
+                doublequote=False,
+                escapechar='\\',
+                lineterminator='\n',
+                quotechar=None,
+                quoting=csv.QUOTE_NONE,
+                strict=True,
             )
             with tempfile.NamedTemporaryFile('w+b') as json_tmp_file:
                 logging.info('Parsing CSV into JSON ...')

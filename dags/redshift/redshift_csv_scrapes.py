@@ -21,7 +21,7 @@ from redshift.constants import (
 default_args = {
     'owner': 'ilan',
     'depends_on_past': False,
-    'start_date': datetime(2017, 2, 7),
+    'start_date': datetime(2017, 2, 27),
     'email': ['igoodman@summitps.org'],
     'email_on_failure': True,
     'email_on_retry': False,
@@ -78,6 +78,7 @@ def get_scrape_subdag(table_name):
 for table_name in FBCachedDbApiHook.gen_postgres_tables():
     if table_name in SCRAPE_TABLES_TO_SKIP:
         continue
+
     SubDagOperator(
         subdag=get_scrape_subdag(table_name),
         task_id=table_name,
