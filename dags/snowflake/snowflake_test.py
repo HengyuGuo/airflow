@@ -5,7 +5,7 @@ http://airflow.readthedocs.org/en/latest/tutorial.html
 from airflow import DAG
 from airflow.operators.jdbc_operator import JdbcOperator
 from datetime import datetime, timedelta
-
+from constants import DEFAULT_SCHEDULE_INTERVAL
 
 default_args = {
     'owner': 'airflow',
@@ -23,7 +23,10 @@ default_args = {
 }
 
 dag = DAG(
-    'snowflake_test', default_args=default_args, schedule_interval='@daily')
+    'snowflake_test',
+    default_args=default_args,
+    schedule_interval=DEFAULT_SCHEDULE_INTERVAL,
+)
 
 t1 = JdbcOperator(
   task_id='count_table_rows',

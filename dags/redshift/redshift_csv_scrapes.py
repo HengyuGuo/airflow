@@ -30,6 +30,7 @@ default_args = {
 }
 
 PARENT_DAG_NAME = 'redshift_csv_scrapes'
+# CSV scrapes run at midnight -- they are the first job. Do not change.
 SCHEDULE_INTERVAL = '@daily'
 
 main_dag = DAG(

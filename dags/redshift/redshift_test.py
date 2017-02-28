@@ -5,6 +5,7 @@ http://airflow.readthedocs.org/en/latest/tutorial.html
 from airflow import DAG
 from airflow.operators.postgres_operator import PostgresOperator
 from datetime import datetime, timedelta
+from constants import DEFAULT_SCHEDULE_INTERVAL
 from redshift.constants import REDSHIFT_CONN_ID
 
 default_args = {
@@ -23,7 +24,10 @@ default_args = {
 }
 
 dag = DAG(
-    'redshift_test', default_args=default_args, schedule_interval='@daily')
+    'redshift_test',
+    default_args=default_args,
+    schedule_interval=DEFAULT_SCHEDULE_INTERVAL,
+)
 
 t1 = PostgresOperator(
   task_id='count_table_rows',

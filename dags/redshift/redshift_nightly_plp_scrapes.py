@@ -7,7 +7,11 @@ from airflow.operators import (
 )
 from airflow.hooks import FBCachedDbApiHook
 from datetime import date, datetime, timedelta
-from redshift.constants import REDSHIFT_CONN_ID, STAGING_SCRAPES_WRITE_SCHEMA
+from constants import DEFAULT_SCHEDULE_INTERVAL
+from redshift.constants import (
+    REDSHIFT_CONN_ID,
+    STAGING_SCRAPES_WRITE_SCHEMA,
+)
 
 default_args = {
     'owner': 'astewart',
@@ -21,7 +25,7 @@ default_args = {
 }
 
 PARENT_DAG_NAME = 'redshift_nightly_plp_scrapes'
-SCHEDULE_INTERVAL = '@daily'
+SCHEDULE_INTERVAL = DEFAULT_SCHEDULE_INTERVAL
 
 main_dag = DAG(
     PARENT_DAG_NAME,

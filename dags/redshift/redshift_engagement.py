@@ -7,6 +7,7 @@ from airflow.operators import (
     FBSignalSensor,
     FBWriteSignalOperator,
 )
+from constants import DEFAULT_SCHEDULE_INTERVAL
 from redshift.constants import (
     REDSHIFT_CONN_ID,
     DIM_AND_FCT_SCHEMA,
@@ -28,7 +29,7 @@ default_args = {
 dag = DAG(
     'redshift_engagement',
     default_args=default_args,
-    schedule_interval='@daily',
+    schedule_interval=DEFAULT_SCHEDULE_INTERVAL,
 )
 
 def def_delete(table):

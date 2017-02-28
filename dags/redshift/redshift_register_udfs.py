@@ -6,6 +6,7 @@ from airflow.operators import (
     FBWriteSignalOperator,
 )
 from datetime import datetime, timedelta
+from constants import DEFAULT_SCHEDULE_INTERVAL
 from redshift.constants import REDSHIFT_CONN_ID
 
 default_args = {
@@ -22,7 +23,7 @@ default_args = {
 dag = DAG(
     'redshift_register_udfs',
     default_args=default_args,
-    schedule_interval='@daily',
+    schedule_interval=DEFAULT_SCHEDULE_INTERVAL,
 )
 
 udfs = {

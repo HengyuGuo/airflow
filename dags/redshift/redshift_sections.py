@@ -6,6 +6,7 @@ from airflow.operators import (
 )
 from airflow.operators.subdag_operator import SubDagOperator
 from datetime import datetime, timedelta
+from constants import DEFAULT_SCHEDULE_INTERVAL
 from redshift.constants import (
     REDSHIFT_CONN_ID,
     STAGING_SCRAPES_SCHEMA,
@@ -23,7 +24,11 @@ default_args = {
     'retry_delay': timedelta(minutes=5),
 }
 
-dag = DAG('redshift_sections', default_args=default_args, schedule_interval='@daily')
+dag = DAG(
+    'redshift_sections',
+    default_args=default_args,
+    schedule_interval=DEFAULT_SCHEDULE_INTERVAL,
+)
 
 wait_for_sections = FBSignalSensor(
     task_id='wait_for_sections',

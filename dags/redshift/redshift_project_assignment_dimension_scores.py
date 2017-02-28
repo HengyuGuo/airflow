@@ -5,6 +5,7 @@ from airflow.operators import (
     FBRedshiftOperator,
 )
 from datetime import datetime, timedelta
+from constants import DEFAULT_SCHEDULE_INTERVAL
 from redshift.constants import (
     REDSHIFT_CONN_ID,
     STAGING_SCRAPES_SCHEMA,
@@ -22,9 +23,11 @@ default_args = {
     'retry_delay': timedelta(minutes=5),
 }
 
-dag = DAG('redshift_project_assignment_dimension_scores', 
+dag = DAG(
+    'redshift_project_assignment_dimension_scores',
     default_args=default_args, 
-    schedule_interval='@daily')
+    schedule_interval=DEFAULT_SCHEDULE_INTERVAL,
+)
 
 wait_for_project_assignments = FBSignalSensor(
     task_id='wait_for_project_assignments',

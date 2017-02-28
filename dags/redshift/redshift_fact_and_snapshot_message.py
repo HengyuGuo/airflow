@@ -4,6 +4,7 @@ from airflow.operators import (
     FBSNSOperator,
     FBExternalDagRunSensor,
 )
+from constants import DEFAULT_SCHEDULE_INTERVAL
 
 default_args = {
     'owner': 'astewart',
@@ -19,7 +20,7 @@ default_args = {
 dag = DAG(
     'redshift_fact_and_snapshot_message',
     default_args=default_args,
-    schedule_interval='@daily',
+    schedule_interval=DEFAULT_SCHEDULE_INTERVAL,
 )
 
 CHECK_THESE_DAGS = [

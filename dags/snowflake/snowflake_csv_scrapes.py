@@ -9,6 +9,7 @@ from airflow.operators import (
 from airflow.hooks import FBCachedDbApiHook
 
 from datetime import datetime, timedelta
+from constants import DEFAULT_SCHEDULE_INTERVAL
 from scrapes.constants import SCRAPE_TABLES_TO_SKIP
 from scrapes.utils import (
     get_data_s3_key,
@@ -34,7 +35,7 @@ default_args = {
 }
 
 PARENT_DAG_NAME = 'snowflake_csv_scrapes'
-SCHEDULE_INTERVAL = '@daily'
+SCHEDULE_INTERVAL = DEFAULT_SCHEDULE_INTERVAL
 
 main_dag = DAG(
     PARENT_DAG_NAME,
