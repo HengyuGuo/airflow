@@ -19,20 +19,18 @@ from snowflake.constants import (
 default_args = {
     'owner': 'astewart',
     'depends_on_past': False,
-    'start_date': datetime(2017, 2, 28),
+    'start_date': datetime(2016, 1, 1),
     'email': ['astewart@summitps.org'],
     # Turning off failure emails until we can batch failures.
     'email_on_failure': False,
     'email_on_retry': False,
     'retries': 0,
-    # Give this job extra priority -- it should win over other jobs.
-    'priority_weight': 10,
 }
 
 dag = DAG(
     'snowflake_set_table_permissions',
     default_args=default_args,
-    schedule_interval='* * * * *',
+    schedule_interval='@once',
 )
 
 sqls = []
