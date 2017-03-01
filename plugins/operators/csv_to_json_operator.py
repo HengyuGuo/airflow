@@ -41,14 +41,15 @@ class FBCSVToJSONOperator(BaseOperator):
     def _jsonify_row_with_types(self, row, schema_array):
         # Convert types
         for schema in schema_array:
+            schema_type = schema[1].lower().split('(')[0]
             if row[schema[0]] == '\\N':
                 # Just set NULL values to None
                 row[schema[0]] = None
             elif '[' in schema[1]:
                 # Ignore array types aggressively
                 continue
-            elif schema[1].lower().split('(')[0] in POSTGRES_DATA_TYPES_TO_PYTHON_TYPES:
-                row[schema[0]] = POSTGRES_DATA_TYPES_TO_PYTHON_TYPES[schema[1]](row[schema[0]])
+            elif schema_type in POSTGRES_DATA_TYPES_TO_PYTHON_TYPES:
+                row[schema[0]] = POSTGRES_DATA_TYPES_TO_PYTHON_TYPES[schema_type](row[schema[0]])
             else:
                 # Keep everything, including date/time/character/text/arrays/etc., as a string
                 continue
