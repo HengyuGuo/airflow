@@ -18,7 +18,7 @@ from datetime import datetime, timedelta
 default_args = {
     'owner': 'keoki',
     'depends_on_past': False,
-    'start_date': datetime(2016, 10, 16),
+    'start_date': datetime(2016, 10, 16, 3),
     'email': ['kseu@summitps.org'],
     'email_on_failure': False,
     'email_on_retry': False,
@@ -27,9 +27,9 @@ default_args = {
 }
 
 dag = DAG(
-    'redshift_engagement',
+    'redshift_engagement_aggregations',
     default_args=default_args,
-    schedule_interval=DEFAULT_SCHEDULE_INTERVAL,
+    schedule_interval='@daily',
 )
 
 def def_delete(table):
