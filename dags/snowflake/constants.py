@@ -7,9 +7,11 @@ S3_BUCKET = 'plp-data-lake'
 CSV_STAGE = 'stg_csv'
 
 AIRFLOW_SCHEMA = 'airflow'
+PUBLIC_SCHEMA = 'public'
 STAGING_SCRAPES_SCHEMA = 'staging_scrapes'
 SCHEMAS = [
     AIRFLOW_SCHEMA,
+    PUBLIC_SCHEMA,
     STAGING_SCRAPES_SCHEMA,
 ]
 
