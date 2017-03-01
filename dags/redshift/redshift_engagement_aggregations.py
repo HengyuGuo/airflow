@@ -29,7 +29,7 @@ default_args = {
 dag = DAG(
     'redshift_engagement_aggregations',
     default_args=default_args,
-    schedule_interval='@daily',
+    schedule_interval=DEFAULT_SCHEDULE_INTERVAL,
 )
 
 def def_delete(table):
