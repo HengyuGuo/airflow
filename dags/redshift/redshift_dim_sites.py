@@ -60,7 +60,12 @@ create_dim_sites = FBRedshiftOperator(
         district_name character varying(65535),
         as_of date,
         status character varying(256),
-        school_type character varying(65535)
+        school_type character varying(65535),
+        student_data_sharing character varying(256),
+        teacher_sync_enabled bool,
+        should_sync_clever bool,
+        student_sync_enabled bool,
+        section_sync_enabled bool
     );
     COMMIT;
     """.format(schema=DIM_AND_FCT_SCHEMA),
@@ -91,7 +96,28 @@ insert_dim_sites = FBHistoricalOperator(
             WHEN public.enum_name_for_value('enrollment_group', s.enrollment_group, 'sites', 'Site') like '%d2t%'
             THEN 'IT'
             ELSE null 
-        END as school_type
+        END as school_type,
+        enum_name_for_value('student_data_sharing', student_data_sharing, 'sites', 'Site') as student_data_sharing,
+        CASE scs.teacher_sync_enabled
+            WHEN 't' THEN true
+            WHEN 'f' THEN false
+            ELSE NULL
+        END AS teacher_sync_enabled,
+        CASE scs.should_sync_clever
+            WHEN 't' THEN true
+            WHEN 'f' THEN false
+            ELSE NULL
+        END AS should_sync_clever,
+        CASE scs.student_sync_enabled
+            WHEN 't' THEN true
+            WHEN 'f' THEN false
+            ELSE NULL
+        END AS student_sync_enabled,
+        CASE scs.section_sync_enabled
+            WHEN 't' THEN true
+            WHEN 'f' THEN false
+            ELSE NULL
+        END AS section_sync_enabled
     FROM {{ params.input_schema }}."sites_{{ ds }}" s
     LEFT JOIN {{ params.input_schema}}."districts_{{ ds }}" d
     ON s.district_id = d.id
@@ -99,6 +125,8 @@ insert_dim_sites = FBHistoricalOperator(
     ON summit.site_id = s.id
     LEFT JOIN wild_west.slp_site_info slp
     ON slp.site_id = s.id
+    LEFT JOIN {{ params.input_schema }}."site_clever_settings_{{ ds }}" scs
+    ON s.id = scs.site_id
     """,
     dag=dag,
 )
