@@ -16,7 +16,7 @@ class FBExternalDagRunSensor(BaseSensorOperator):
     def __init__(
         self,
         wait_for_dag_id=None,
-        execution_date='{{ ds }}',
+        execution_date='{{ ts }}',
         retry_delay=timedelta(seconds=600),
         retries=144,  # 600 seconds * 144 = 1 day
         *args, **kwargs):
