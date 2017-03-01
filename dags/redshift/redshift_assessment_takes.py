@@ -36,6 +36,14 @@ wait_for_assessment_takes = FBSignalSensor(
     dag=dag,
 )
 
+wait_for_know_dos = FBSignalSensor(
+    task_id='wait_for_know_dos',
+    conn_id=REDSHIFT_CONN_ID,
+    schema=STAGING_SCRAPES_SCHEMA,
+    table='know_dos',
+    dag=dag,
+)
+
 insert_assessment_takes = FBRedshiftOperator(
     task_id='insert_assessment_takes',
     postgres_conn_id=REDSHIFT_CONN_ID,
@@ -132,4 +140,4 @@ insert_assessment_takes = FBRedshiftOperator(
         today='{{ ds }}',
     )
 )
-insert_assessment_takes.set_upstream(wait_for_assessment_takes)
+insert_assessment_takes.set_upstream([wait_for_assessment_takes, wait_for_know_dos])
