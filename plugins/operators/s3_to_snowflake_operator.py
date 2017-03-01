@@ -10,10 +10,11 @@ from airflow.exceptions import AirflowException
 from snowflake.constants import (
     SNOWFLAKE_CONN_ID,
     POSTGRES_TO_SNOWFLAKE_DATA_TYPES,
-    PASSTHROUGH_TYPE,
+    FLOATESQUE_TYPE,
     STRING_TYPE,
     S3_BUCKET,
     DATE_TYPE,
+    FLOAT_TYPE,
 )
 
 from fb_required_args import require_keyword_args
@@ -80,8 +81,14 @@ class FBS3ToSnowflakeOperator(BaseOperator):
                 )
                 if use_precise_type:
                     new_type = POSTGRES_TO_SNOWFLAKE_DATA_TYPES[type_and_len[0]]
-                    if new_type != PASSTHROUGH_TYPE:
+                    if new_type != FLOATESQUE_TYPE:
                         column[1] = new_type
+                    # For numeric and decimal, if no arguments is provided then postgres
+                    # says "numeric values of any precision and scale can be stored".
+                    # The only way to emulate this behavior is to use a float (which is what
+                    # matillion + redshift also does).
+                    elif new_type == FLOATESQUE_TYPE and len(type_and_len) == 1:
+                        column[1] = FLOAT_TYPE
                 else:
                     # Replace any non-supported data types with the string type, aka VARCHAR
                     column[1] = STRING_TYPE

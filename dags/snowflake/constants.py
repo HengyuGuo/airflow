@@ -15,7 +15,8 @@ SCHEMAS = [
     STAGING_SCRAPES_SCHEMA,
 ]
 
-PASSTHROUGH_TYPE = 'passthru'
+# "Floatesque": For types decimal and numeric which represent real numbers.
+FLOATESQUE_TYPE = 'floatesque'
 BOOLEAN_TYPE = 'BOOLEAN'
 DATE_TYPE = 'DATE'
 FLOAT_TYPE = 'FLOAT'
@@ -35,8 +36,8 @@ POSTGRES_TO_SNOWFLAKE_DATA_TYPES = {
     'int4': INTEGER_TYPE,
     'bigint': INTEGER_TYPE,
     'int8': INTEGER_TYPE,
-    'decimal': PASSTHROUGH_TYPE,
-    'numeric': PASSTHROUGH_TYPE,
+    'decimal': FLOATESQUE_TYPE,
+    'numeric': FLOATESQUE_TYPE,
     'real': FLOAT_TYPE,
     'float4': FLOAT_TYPE,
     'double precision': FLOAT_TYPE,
