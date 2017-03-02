@@ -21,6 +21,7 @@ from snowflake.constants import (
     STAGING_SCRAPES_SCHEMA,
     SNOWFLAKE_CONN_ID,
     POSTGRES_COLUMNS_WITH_INVALID_DATES,
+    DS_FOR_TABLE,
 )
 
 default_args = {
@@ -67,10 +68,10 @@ def get_scrape_subdag(table_name):
     upload_table = FBS3ToSnowflakeOperator(
         task_id='upload_table',
         snowflake_conn_id=SNOWFLAKE_CONN_ID,
-        table='{schema}."{table_name}_{today}"'.format(
+        table='{schema}.{table_name}_{today}'.format(
             schema=STAGING_SCRAPES_SCHEMA,
             table_name=table_name,
-            today='{{ ds }}',
+            today=DS_FOR_TABLE,
         ),
         data_s3_key=data_s3_key,
         stage=CSV_STAGE,

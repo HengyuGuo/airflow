@@ -12,6 +12,7 @@ from snowflake.constants import (
     SNOWFLAKE_CONN_ID,
     STAGING_SCRAPES_SCHEMA,
     PUBLIC_SCHEMA,
+    DS_FOR_TABLE,
 )
 
 default_args = {
@@ -126,14 +127,14 @@ insert_assessment_takes = FBSnowflakeOperator(
                 ats."invalidation_description",
                 kd."pcnt_to_pass",
                 (100 * ats."num_correct" / cast(ats."num_possible" as float)) >= cast(round(kd."pcnt_to_pass" * 100, 0) as int)
-            FROM {input_schema}."assessment_takes_{today}" ats
-            LEFT JOIN {input_schema}."know_dos_{today}" kd
+            FROM {input_schema}.assessment_takes_{today} ats
+            LEFT JOIN {input_schema}.know_dos_{today} kd
             ON (ats."know_do_id" = kd."id")
         );
         """.format(
             output_schema=PUBLIC_SCHEMA,
             input_schema=STAGING_SCRAPES_SCHEMA,
-            today='{{ ds }}',
+            today=DS_FOR_TABLE,
         ),
         'COMMIT;',
     ],

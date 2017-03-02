@@ -77,3 +77,9 @@ ROLES_TO_USERS = OrderedDict([
     ('ACCOUNTADMIN', ['airflow_admin']),
     ('SYSADMIN', ['airflow_admin']),
 ])
+
+COLUMNS_TO_QUOTE = [
+    'order',
+]
+
+DS_FOR_TABLE = '{{ ds.replace(\'-\', \'_\') }}'

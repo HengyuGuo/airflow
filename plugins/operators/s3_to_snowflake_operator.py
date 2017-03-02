@@ -15,6 +15,7 @@ from snowflake.constants import (
     S3_BUCKET,
     DATE_TYPE,
     FLOAT_TYPE,
+    COLUMNS_TO_QUOTE,
 )
 
 from fb_required_args import require_keyword_args
@@ -71,7 +72,8 @@ class FBS3ToSnowflakeOperator(BaseOperator):
 
             for column in schema_array:
                 column_name = column[0]
-                column[0] = '"{}"'.format(column_name)
+                if column_name in COLUMNS_TO_QUOTE:
+                    column[0] = '"{}"'.format(column_name)
 
                 # We're assuming well-formed type information
                 type_and_len = column[1].lower().split('(')
