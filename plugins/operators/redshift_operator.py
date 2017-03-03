@@ -44,7 +44,7 @@ class FBHistoricalOperator(FBRedshiftOperator):
         """ + self.select_sql + ';'
         insert_signal = """
             {% if not test_mode %}
-                INSERT INTO airflow."signal"
+                INSERT INTO airflow.signal
                 (schema_name, table_name, partition_id, status)
                 VALUES
                 ('{{ params.output_schema }}', '{{ params.historical_table}}', 'as_of={{ ds }}', 'done');
@@ -61,7 +61,7 @@ class FBHistoricalOperator(FBRedshiftOperator):
         """
         view_signal = """
             {% if not test_mode %}
-                INSERT INTO airflow."signal"
+                INSERT INTO airflow.signal
                 (schema_name, table_name, partition_id, status)
                 VALUES
                 ('{{ params.output_schema }}', '{{ params.view_name}}', 'as_of={{ ds }}', 'done');

@@ -33,9 +33,9 @@ class FBWriteSignalOperator(BaseOperator):
         #
         # For the record, it was created:
         # CREATE SCHEMA airflow;
-        # CREATE TABLE airflow."signal" (schema_name TEXT, table_name TEXT, partition_id TEXT, status VARCHAR(256));
+        # CREATE TABLE airflow.signal (schema_name TEXT, table_name TEXT, partition_id TEXT, status VARCHAR(256));
         sql = """
-            INSERT INTO airflow."signal"
+            INSERT INTO airflow.signal
             (schema_name, table_name, partition_id, status)
             VALUES 
             ('{0}', '{1}', '{2}', '{3}')

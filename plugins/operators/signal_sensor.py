@@ -37,7 +37,7 @@ class FBSignalSensor(BaseSensorOperator):
         hook = BaseHook.get_connection(self.conn_id).get_hook()
         sql = """
             SELECT COUNT(1)
-            FROM airflow."signal"
+            FROM airflow.signal
             WHERE
                 schema_name = '{0}' AND
                 table_name = '{1}' AND
