@@ -9,14 +9,13 @@ from datetime import datetime, timedelta
 from constants import DEFAULT_SCHEDULE_INTERVAL
 from redshift.constants import (
     REDSHIFT_CONN_ID,
-    STAGING_SCRAPES_SCHEMA,
     DIM_AND_FCT_SCHEMA,
 )
 
 default_args = {
     'owner': 'astewart',
     'depends_on_past': False,
-    'start_date': datetime(2017, 2, 16),
+    'start_date': datetime(2016, 3, 5),
     'email': ['astewart@summitps.org'],
     'email_on_failure': True,
     'email_on_retry': False,
@@ -28,22 +27,6 @@ dag = DAG(
     'redshift_agg_perf',
     default_args=default_args,
     schedule_interval=DEFAULT_SCHEDULE_INTERVAL,
-)
-
-wait_for_sites = FBSignalSensor(
-    task_id='wait_for_sites',
-    conn_id=REDSHIFT_CONN_ID,
-    schema=STAGING_SCRAPES_SCHEMA,
-    table='sites',
-    dag=dag,
-)
-
-wait_for_districts = FBSignalSensor(
-    task_id='wait_for_districts',
-    conn_id=REDSHIFT_CONN_ID,
-    schema=STAGING_SCRAPES_SCHEMA,
-    table='districts',
-    dag=dag,
 )
 
 create_agg_perf = FBRedshiftOperator(
@@ -118,102 +101,102 @@ insert_agg_perf = FBHistoricalOperator(
         ps.response_size_p95,
         cnt.response_size_cnt
     FROM (
-    SELECT DISTINCT
-        controller,
-        action,
-        release_version,
-        release_created_at,
-        PERCENTILE_CONT(0.1) WITHIN GROUP (ORDER BY duration)
-            OVER(PARTITION BY controller, action,
-            release_version, release_created_at)
-        AS duration_p10,
-        PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY duration)
-            OVER(PARTITION BY controller, action,
-            release_version, release_created_at)
-        AS duration_p25,
-        PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY duration)
-            OVER(PARTITION BY controller, action,
-            release_version, release_created_at)
-        AS duration_p50,
-        PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY duration)
-            OVER(PARTITION BY controller, action,
-            release_version, release_created_at)
-        AS duration_p75,
-        PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY duration)
-            OVER(PARTITION BY controller, action,
-            release_version, release_created_at)
-        AS duration_p90,
-        PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY duration)
-            OVER(PARTITION BY controller, action,
-            release_version, release_created_at)
-        AS duration_p95,
-        PERCENTILE_CONT(0.1) WITHIN GROUP (ORDER BY db)
-            OVER(PARTITION BY controller, action,
-            release_version, release_created_at)
-        AS db_p10,
-        PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY db)
-            OVER(PARTITION BY controller, action,
-            release_version, release_created_at)
-        AS db_p25,
-        PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY db)
-            OVER(PARTITION BY controller, action,
-            release_version, release_created_at)
-        AS db_p50,
-        PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY db)
-            OVER(PARTITION BY controller, action,
-            release_version, release_created_at)
-        AS db_p75,
-        PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY db)
-            OVER(PARTITION BY controller, action,
-            release_version, release_created_at)
-        AS db_p90,
-        PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY db)
-            OVER(PARTITION BY controller, action,
-            release_version, release_created_at)
-        AS db_p95,
-        PERCENTILE_CONT(0.1) WITHIN GROUP (ORDER BY response_size)
-            OVER(PARTITION BY controller, action,
-            release_version, release_created_at)
-        AS response_size_p10,
-        PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY response_size)
-            OVER(PARTITION BY controller, action,
-            release_version, release_created_at)
-        AS response_size_p25,
-        PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY response_size)
-            OVER(PARTITION BY controller, action,
-            release_version, release_created_at)
-        AS response_size_p50,
-        PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY response_size)
-            OVER(PARTITION BY controller, action,
-            release_version, release_created_at)
-        AS response_size_p75,
-        PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY response_size)
-            OVER(PARTITION BY controller, action,
-            release_version, release_created_at)
-        AS response_size_p90,
-        PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY response_size)
-            OVER(PARTITION BY controller, action,
-            release_version, release_created_at)
-        AS response_size_p95
-    FROM http_logs_prod
-    WHERE DATE_TRUNC('day', "timestamp") = '{{ ds }}'
+        SELECT DISTINCT
+            controller,
+            action,
+            release_version,
+            release_created_at,
+            PERCENTILE_CONT(0.1) WITHIN GROUP (ORDER BY duration)
+                OVER(PARTITION BY controller, action,
+                release_version, release_created_at)
+            AS duration_p10,
+            PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY duration)
+                OVER(PARTITION BY controller, action,
+                release_version, release_created_at)
+            AS duration_p25,
+            PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY duration)
+                OVER(PARTITION BY controller, action,
+                release_version, release_created_at)
+            AS duration_p50,
+            PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY duration)
+                OVER(PARTITION BY controller, action,
+                release_version, release_created_at)
+            AS duration_p75,
+            PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY duration)
+                OVER(PARTITION BY controller, action,
+                release_version, release_created_at)
+            AS duration_p90,
+            PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY duration)
+                OVER(PARTITION BY controller, action,
+                release_version, release_created_at)
+            AS duration_p95,
+            PERCENTILE_CONT(0.1) WITHIN GROUP (ORDER BY db)
+                OVER(PARTITION BY controller, action,
+                release_version, release_created_at)
+            AS db_p10,
+            PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY db)
+                OVER(PARTITION BY controller, action,
+                release_version, release_created_at)
+            AS db_p25,
+            PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY db)
+                OVER(PARTITION BY controller, action,
+                release_version, release_created_at)
+            AS db_p50,
+            PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY db)
+                OVER(PARTITION BY controller, action,
+                release_version, release_created_at)
+            AS db_p75,
+            PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY db)
+                OVER(PARTITION BY controller, action,
+                release_version, release_created_at)
+            AS db_p90,
+            PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY db)
+                OVER(PARTITION BY controller, action,
+                release_version, release_created_at)
+            AS db_p95,
+            PERCENTILE_CONT(0.1) WITHIN GROUP (ORDER BY response_size)
+                OVER(PARTITION BY controller, action,
+                release_version, release_created_at)
+            AS response_size_p10,
+            PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY response_size)
+                OVER(PARTITION BY controller, action,
+                release_version, release_created_at)
+            AS response_size_p25,
+            PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY response_size)
+                OVER(PARTITION BY controller, action,
+                release_version, release_created_at)
+            AS response_size_p50,
+            PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY response_size)
+                OVER(PARTITION BY controller, action,
+                release_version, release_created_at)
+            AS response_size_p75,
+            PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY response_size)
+                OVER(PARTITION BY controller, action,
+                release_version, release_created_at)
+            AS response_size_p90,
+            PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY response_size)
+                OVER(PARTITION BY controller, action,
+                release_version, release_created_at)
+            AS response_size_p95
+        FROM http_logs_prod
+        WHERE DATE_TRUNC('day', "timestamp") = '{{ ds }}'
     ) ps
     JOIN (
-    SELECT
-        controller,
-        action,
-        release_version,
-        release_created_at,
-        COUNT(duration) AS duration_cnt,
-        COUNT(db) AS db_cnt,
-        COUNT(response_size) AS response_size_cnt
-    FROM http_logs_prod
-    WHERE DATE_TRUNC('day', "timestamp") = '{{ ds }}'
-    GROUP BY
-        controller,
-        action,
-        release_version,
-        release_created_at
+        SELECT
+            controller,
+            action,
+            release_version,
+            release_created_at,
+            COUNT(duration) AS duration_cnt,
+            COUNT(db) AS db_cnt,
+            COUNT(response_size) AS response_size_cnt
+        FROM http_logs_prod
+        WHERE DATE_TRUNC('day', "timestamp") = '{{ ds }}'
+        GROUP BY
+            controller,
+            action,
+            release_version,
+            release_created_at
     ) cnt
     ON COALESCE(ps.controller, '____null____') = COALESCE(cnt.controller, '____null____')
     AND COALESCE(ps.action, '____null____') = COALESCE(cnt.action, '____null____')
@@ -225,8 +208,4 @@ insert_agg_perf = FBHistoricalOperator(
     dag=dag,
 )
 
-insert_agg_perf.set_upstream([
-    wait_for_sites, 
-    wait_for_districts,
-    create_agg_perf,
-])
+insert_agg_perf.set_upstream(create_agg_perf)
