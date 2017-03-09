@@ -130,6 +130,7 @@ class FBS3ToRedshiftOperator(BaseOperator):
             DATEFORMAT 'auto' TIMEFORMAT 'auto'
             MAXERROR 0;
 
+            COMMIT;
         """.format(
             pre_sql=self.pre_sql,
             table=self.table,
