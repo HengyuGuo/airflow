@@ -66,8 +66,7 @@ load_enums_translations.set_upstream(create_enums_translations)
 load_enum_udf = FBRedshiftEnumUDFOperator(
     redshift_conn_id=REDSHIFT_CONN_ID,
     task_id='load_enum_udf',
-    schema=STAGING_SCRAPES_WRITE_SCHEMA,
-    table_name=table_name,
+    table=table_name,
     dag=dag,
 )
 

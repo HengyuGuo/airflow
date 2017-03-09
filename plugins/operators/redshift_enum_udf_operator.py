@@ -5,25 +5,26 @@ from redshift.constants import (
 from airflow.hooks.postgres_hook import PostgresHook
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
+from fb_required_args import require_keyword_args
 
 class FBRedshiftEnumUDFOperator(BaseOperator):
 
     @apply_defaults
+    @require_keyword_args(['task_id', 'table', 'dag'])
     def __init__(
         self,
         redshift_conn_id=REDSHIFT_CONN_ID,
-        table_name,
-        *args,
-        **kwargs
+        *args, **kwargs
     ):
-        super(FBRedshiftEnumUDFOperator, self).__init__(*args, **kwargs)
         self.redshift_conn_id = redshift_conn_id
-        self.table_name = table_name
+        self.table = kwargs['table']
+        del kwargs['table']
+        super(FBRedshiftEnumUDFOperator, self).__init__(*args, **kwargs)
 
     def execute(self, context):
         # part 1: self.hook.get_records('SELECT *...')
         self.hook = PostgresHook(postgres_conn_id=self.redshift_conn_id)
-        current_state = self.hook.get_records('SELECT * FROM {};'.format(self.table_name));
+        current_state = self.hook.get_records('SELECT * FROM {};'.format(self.table));
         
         enums_translations = {}
         
