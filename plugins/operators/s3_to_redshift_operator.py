@@ -85,6 +85,7 @@ class FBS3ToRedshiftOperator(BaseOperator):
 
         pre_sql = """
             DROP TABLE IF EXISTS {table};
+
             CREATE TABLE IF NOT EXISTS {table} (
                 {schema}
             ) DISTSTYLE EVEN;
@@ -117,7 +118,9 @@ class FBS3ToRedshiftOperator(BaseOperator):
 
         sql = """
             BEGIN;
+
             {pre_sql};
+
             COPY {table}
             FROM '{s3_path}'
             REGION '{s3_region}'
@@ -126,7 +129,7 @@ class FBS3ToRedshiftOperator(BaseOperator):
             GZIP
             DATEFORMAT 'auto' TIMEFORMAT 'auto'
             MAXERROR 0;
-            COMMIT;
+
         """.format(
             pre_sql=self.pre_sql,
             table=self.table,
