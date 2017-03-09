@@ -49,7 +49,7 @@ create_enums_translations = FBRedshiftOperator(
     postgres_conn_id=REDSHIFT_CONN_ID,
 )
 
-s3_key = '//plp-eng/enums/translations_{{ ds }}.txt'
+s3_key = '//plp-data-lake/enums/translations_{{ ds }}.csv.gz'
 
 load_enums_translations = FBS3ToRedshiftOperator(
     redshift_conn_id=REDSHIFT_CONN_ID,
@@ -58,7 +58,6 @@ load_enums_translations = FBS3ToRedshiftOperator(
     s3_key=s3_key,
     is_json=False,
     pre_sql='DELETE FROM {};'.format(table_name),
-    gzip=False,
     dag=dag,
 )
 
@@ -67,6 +66,8 @@ load_enums_translations.set_upstream(create_enums_translations)
 load_enum_udf = FBRedshiftEnumUDFOperator(
     redshift_conn_id=REDSHIFT_CONN_ID,
     task_id='load_enum_udf',
+    schema=STAGING_SCRAPES_WRITE_SCHEMA,
+    table_name=table_name,
     dag=dag,
 )
 

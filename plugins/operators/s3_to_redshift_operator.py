@@ -24,7 +24,6 @@ class FBS3Hook(S3Hook):
 
 class FBS3ToRedshiftOperator(BaseOperator):
     template_fields = (
-      'gzip',
       'table',
       's3_key',
       'pre_sql',
@@ -41,7 +40,6 @@ class FBS3ToRedshiftOperator(BaseOperator):
             s3_conn_id='s3_default',
             s3_region='us-east-1',
             is_json=True,
-            gzip=True,
             drop_and_create=False,
             schema_s3_key=None,
             *args, **kwargs):
@@ -53,7 +51,6 @@ class FBS3ToRedshiftOperator(BaseOperator):
         self.s3_conn_id = s3_conn_id
         self.s3_region = s3_region
         self.is_json = is_json
-        self.gzip = gzip
         self.drop_and_create = drop_and_create
         self.schema_s3_key = schema_s3_key
 
@@ -88,7 +85,6 @@ class FBS3ToRedshiftOperator(BaseOperator):
 
         pre_sql = """
             DROP TABLE IF EXISTS {table};
-
             CREATE TABLE IF NOT EXISTS {table} (
                 {schema}
             ) DISTSTYLE EVEN;
@@ -119,29 +115,19 @@ class FBS3ToRedshiftOperator(BaseOperator):
         if self.drop_and_create:
             self.pre_sql += self._build_pre_sql()
 
-        gzip_or_not = ''
-        if self.gzip:
-            gzip_or_not = """
-                GZIP
-            """
-
         sql = """
             BEGIN;
-
             {pre_sql};
-
             COPY {table}
             FROM '{s3_path}'
             REGION '{s3_region}'
             CREDENTIALS 'aws_access_key_id={a_key};aws_secret_access_key={s_key}'
             {json_or_tsv}
-            {gzip_or_not}
+            GZIP
             DATEFORMAT 'auto' TIMEFORMAT 'auto'
             MAXERROR 0;
-
             COMMIT;
         """.format(
-            gzip_or_not=gzip_or_not,
             pre_sql=self.pre_sql,
             table=self.table,
             s3_path='s3:' + self.s3_key,
