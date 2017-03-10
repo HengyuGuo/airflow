@@ -60,7 +60,6 @@ load_enums_translations = FBS3ToRedshiftOperator(
     pre_sql='DELETE FROM {};'.format(table_name),
     dag=dag,
 )
-
 load_enums_translations.set_upstream(create_enums_translations)
 
 load_enum_udf = FBRedshiftEnumUDFOperator(
@@ -69,5 +68,4 @@ load_enum_udf = FBRedshiftEnumUDFOperator(
     table=table_name,
     dag=dag,
 )
-
 load_enum_udf.set_upstream(load_enums_translations)
